@@ -101,6 +101,17 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
 .tog{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:16px;cursor:pointer;font-weight:500}
 .tog input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
 .tog small{display:block;color:var(--mute);font-weight:400}
+.onbar{flex-wrap:wrap}.onbar .btn{margin-left:auto}
+@media (max-width:480px){.onbar .btn{width:100%;padding:12px;margin-top:4px}}
+.seg button{font-size:13px}
+.player button.up{color:var(--bg);border:1.5px solid currentColor;border-radius:99px;padding:6px 12px;font-weight:700}
+.player button.up.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
+.pf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.prow{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;margin-bottom:10px}
+.prow .av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex:none;background:var(--line)}
+.prow .av svg,.prow .av img{width:100%;height:100%;object-fit:cover;display:block}
+.prow .t{flex:1;min-width:0}.prow small{color:var(--mute);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts2{display:flex;flex-direction:column;gap:6px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.dot,.eq i{animation:none!important}}
 </style>
 </head>
@@ -109,7 +120,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <div class="brand disp"><div class="mark" id="mk"></div>wave.radio</div>
   <button class="me out" id="me">Sign in</button>
 </header>
-<div class="seg" id="seg"><button class="on" data-t="real">Real FM</button><button data-t="comm">Community</button><button data-t="rooms">Rooms</button><button data-t="studio">Studio</button></div>
+<div class="seg" id="seg"><button class="on" data-t="real">Real FM</button><button data-t="comm">Community</button><button data-t="rooms">Rooms</button><button data-t="people">People</button><button data-t="studio">Studio</button></div>
 
 <main>
 <section class="tab on" id="t-real">
@@ -123,6 +134,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <div class="sh"><h2>Community</h2><button class="btn" id="goStudio">Start yours</button></div>
   <p class="lead">Stations run by listeners like you. Each one has its own wave tag, like <b>wmz/ember-fox</b>, instead of a number.</p>
   <input id="cq" type="search" placeholder="Search by name or wave tag" aria-label="Search community stations">
+  <div class="pf"><select id="cSortSel" aria-label="Sort stations"><option value="live">On air first</option><option value="votes">Most upvoted</option><option value="new">Newest</option></select><select id="cGenSel" aria-label="Genre"></select></div>
   <div class="onair" id="oa" aria-label="On air now"></div>
   <div class="grid big" id="cg"></div><button class="btn ghost more" id="cm" hidden>Show more</button>
 </section>
@@ -130,12 +142,21 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <div class="sh"><h2>Rooms</h2><button class="btn" id="newRm">Start a room</button></div>
   <div id="rl"></div>
 </section>
+<section class="tab" id="t-people">
+  <div class="sh"><h2>People</h2></div>
+  <p class="lead">Find listeners and station owners, add friends and see who is on air.</p>
+  <input id="fq" type="search" placeholder="Search people, usernames or stations" aria-label="Search people">
+  <div class="pf"><select id="fCo" aria-label="Country"></select><select id="fSort" aria-label="Sort by"><option value="votes">Most upvoted station</option><option value="new">Newest</option><option value="az">A to Z</option></select></div>
+  <div class="chips" id="fGen"></div>
+  <div class="chips" id="fTog"><button data-k="friends">Friends only</button><button data-k="live">On air now</button></div>
+  <div id="frq"></div><div id="plist"></div><button class="btn ghost more" id="pm" hidden>Show more</button>
+</section>
 <section class="tab" id="t-studio"><div id="sd"></div></section>
 </main>
 
 <div id="toast"><span id="ts"></span></div>
 <div class="player" id="pl"><div class="lg" id="pArt"></div><div class="t"><b id="pT"></b><small id="pS"></small></div>
-  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><button class="sb" id="pChat" hidden>Chat</button><button class="pb" id="pBtn" aria-label="Play or pause">II</button><button class="sb" id="pX" aria-label="Close player">✕</button></div>
+  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><button class="up" id="pVote" hidden aria-label="Upvote station">▲ 0</button><button class="sb" id="pChat" hidden>Chat</button><button class="pb" id="pBtn" aria-label="Play or pause">II</button><button class="sb" id="pX" aria-label="Close player">✕</button></div>
 <input type="file" id="file" accept="image/*" hidden>
 
 <dialog id="dAuth"><h3 id="aT">Sign in</h3>
@@ -150,6 +171,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <div class="two"><div><label for="pD">Display name</label><input id="pD" maxlength="40"></div><div><label for="pU">Username</label><input id="pU" maxlength="24"></div></div>
   <label for="pB">Bio</label><textarea id="pB" rows="3" maxlength="300"></textarea>
   <label for="pL">Link</label><input id="pL" type="url" placeholder="https://">
+  <label for="pCo">Country</label><select id="pCo"></select>
   <label for="pC">Accent colour</label><input id="pC" type="color" value="#c8f54b">
   <div class="msg" id="pM"></div>
   <div class="acts"><button class="btn ghost" id="pOut">Sign out</button><button class="btn" id="pSave">Save profile</button></div></dialog>
@@ -172,7 +194,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <label for="rN">Room name</label><input id="rN" maxlength="40"><label for="rT">Topic</label><input id="rT" maxlength="80">
   <div class="acts"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="rGo">Open room</button></div></dialog>
 
-<dialog id="dChat"><h3 id="cT"></h3><div class="msg" id="cS" style="margin:0 0 10px"></div><div class="chat" id="cL"></div>
+<dialog id="dChat"><h3 id="cT"></h3><div class="msg" id="cS" style="margin:0 0 10px"></div><input id="cF" type="search" placeholder="Search this chat" aria-label="Search messages" style="margin-bottom:10px"><div class="chat" id="cL"></div>
   <div class="two" style="margin-top:10px"><input id="cI" maxlength="200" placeholder="Say something"><button class="btn fit" id="cSend">Send</button></div>
   <div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
 
@@ -207,7 +229,9 @@ const who = u => (u && (u.display_name || u.username)) || 'guest';
 const db = {
   async stations(q, off){
     if (sb){
-      let r = sb.from('stations').select('*,profiles(username,display_name,avatar_url)').order('is_live', {ascending:false}).order('created_at', {ascending:false}).range(off, off + 23);
+      let r = sb.from('stations').select('*,profiles(username,display_name,avatar_url)').range(off, off + 23);
+      r = cSort === 'votes' ? r.order('votes', {ascending:false}).order('created_at', {ascending:false}) : cSort === 'new' ? r.order('created_at', {ascending:false}) : r.order('is_live', {ascending:false}).order('votes', {ascending:false});
+      if (cGen) r = r.contains('genres', [cGen]);
       if (q){ const s = q.replace(/[%,()]/g, ''); r = r.or(`name.ilike.%${s}%,tag.ilike.%${s}%`); }
       return (await r).data || [];
     }
@@ -239,9 +263,9 @@ const db = {
     if (sb){ const r = await sb.from('rooms').insert(x).select().single(); if (r.error) throw r.error; return r.data; }
     const a = await db.rooms(); x.id = 'r' + Date.now(); x.profiles = {username:user.username, display_name:user.display_name}; a.unshift(x); ls.set('wr_rm', a); return x;
   },
-  async msgs(ch){
-    if (sb) return ((await sb.from('messages').select('*,profiles(username,display_name)').eq('channel', ch).order('created_at', {ascending:false}).limit(60)).data || []).reverse();
-    return ls.get('wr_m_' + ch, []);
+  async msgs(ch, q = ''){
+    if (sb){ let r = sb.from('messages').select('*,profiles(username,display_name)').eq('channel', ch); if (q) r = r.ilike('body', '%' + q.replace(/[%_,()]/g, '') + '%'); return ((await r.order('created_at', {ascending:false}).limit(60)).data || []).reverse(); }
+    return ls.get('wr_m_' + ch, []).filter(m => !q || m.body.toLowerCase().includes(q.toLowerCase()));
   },
   async send(ch, body){
     if (sb){ const r = await sb.from('messages').insert({channel:ch, body}); if (r.error) throw r.error; return; }
@@ -257,6 +281,7 @@ function go(t){
   if (t === 'real' && !realLoaded) loadReal(true);
   if (t === 'comm') loadComm(true);
   if (t === 'rooms') renderRooms();
+  if (t === 'people') loadPeople(true);
   if (t === 'studio') renderStudio();
   window.scrollTo({top:0});
 }
@@ -270,7 +295,7 @@ const RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'},
   {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'], username:'openrelayproject', credential:'openrelayproject'}]}; // free shared relay; use your own TURN for production
 function showPlayer(p){
   P = p; $('pl').classList.add('on'); $('pArt').innerHTML = pic(p.img, 'a');
-  $('pT').textContent = p.name; $('pS').textContent = p.sub; $('pChat').hidden = p.kind !== 'comm'; $('pBtn').textContent = 'II';
+  $('pT').textContent = p.name; $('pS').textContent = p.sub; $('pChat').hidden = p.kind !== 'comm'; $('pBtn').textContent = 'II'; refreshVote();
   document.querySelectorAll('.card').forEach(c => c.classList.toggle('on', c.dataset.id === p.id));
 }
 function playUrl(p, url){
@@ -337,7 +362,7 @@ $('rq').oninput = () => { clearTimeout(rT); rT = setTimeout(() => { rQ = $('rq')
 $('rm').onclick = () => loadReal(false);
 
 /* ---- Community stations ---- */
-let cQ = '', cOff = 0, cT;
+let cQ = '', cOff = 0, cT, cSort = 'live', cGen = '';
 async function loadComm(reset){
   if (reset){ cOff = 0; $('cg').innerHTML = ''; }
   const a = await db.stations(cQ, cOff); cOff += 24;
@@ -346,7 +371,7 @@ async function loadComm(reset){
     return `<button class="card" data-id="${esc(s.id)}"><div class="ban">${pic(s.banner_url, 'b')}</div>
       <div class="cb"><div class="lg">${pic(s.logo_url, 'a')}</div><b>${esc(s.name)}${isLive(s) ? '<em class="live">LIVE</em>' : ''}</b>
       <span class="tag" style="background:${esc(s.accent)};color:${onc(s.accent || '#c8f54b')}">wmz/${esc(s.tag)}</span>
-      <p>${esc(s.description || (s.genres || []).join(', ') || 'No description yet')}</p><span>by ${esc(who(o))}</span></div></button>`;
+      <p>${esc(s.description || (s.genres || []).join(', ') || 'No description yet')}</p><span>by ${esc(who(o))} · ▲ ${s.votes || 0}</span></div></button>`;
   }).join(''));
   window.CS = Object.assign(window.CS || {}, Object.fromEntries(a.map(s => [s.id, s])));
   if (!$('cg').children.length) $('cg').innerHTML = '<div class="empty">No community stations yet. Be the first: open Studio and start yours.</div>';
@@ -359,7 +384,7 @@ async function loadComm(reset){
 }
 async function playComm(s){
   if (sb && s.mode !== 'stream'){ const r = await sb.from('stations').select('*').eq('id', s.id).maybeSingle(); if (r.data) Object.assign(s, r.data); }
-  const p = {kind:'comm', id:s.id, name:s.name, sub:'wmz/' + s.tag, img:s.logo_url};
+  const p = {kind:'comm', id:s.id, name:s.name, sub:'wmz/' + s.tag, img:s.logo_url, votes:s.votes || 0};
   if (s.mode === 'stream' && s.stream_url) playUrl(p, s.stream_url); else listenLive(s, p);
 }
 $('cq').oninput = () => { clearTimeout(cT); cT = setTimeout(() => { cQ = $('cq').value.trim(); loadComm(true); }, 400); };
@@ -431,14 +456,14 @@ async function loadProfile(u){
 }
 $('me').onclick = () => {
   if (!user) return openAuth('in');
-  $('pD').value = user.display_name || ''; $('pU').value = user.username; $('pB').value = user.bio || ''; $('pL').value = user.link || ''; $('pC').value = user.accent || '#c8f54b'; $('pM').textContent = '';
+  $('pD').value = user.display_name || ''; $('pU').value = user.username; $('pB').value = user.bio || ''; $('pL').value = user.link || ''; $('pCo').value = user.country || ''; $('pC').value = user.accent || '#c8f54b'; $('pM').textContent = '';
   setImg('av', user.avatar_url, 'a'); setImg('bn', user.banner_url, 'b'); $('dProf').showModal();
 };
 $('pSave').onclick = async () => {
   const u = cleanU($('pU').value), link = $('pL').value.trim();
   if (u.length < 3) return void ($('pM').textContent = 'Username needs 3+ letters, numbers, dots or underscores.');
   if (link && !/^https:\/\//.test(link)) return void ($('pM').textContent = 'The link must start with https://');
-  const p = {username:u, display_name:$('pD').value.trim() || u, bio:$('pB').value.trim(), link:link || null, accent:$('pC').value, avatar_url:T.av || null, banner_url:T.bn || null, updated_at:new Date().toISOString()};
+  const p = {username:u, display_name:$('pD').value.trim() || u, bio:$('pB').value.trim(), link:link || null, country:$('pCo').value || null, accent:$('pC').value, avatar_url:T.av || null, banner_url:T.bn || null, updated_at:new Date().toISOString()};
   if (sb){ const r = await sb.from('profiles').update(p).eq('id', user.id); if (r.error) return void ($('pM').textContent = r.error.code === '23505' ? 'That username is taken.' : r.error.message); }
   user = Object.assign(user, p); if (!sb) ls.set('wr_user', user);
   renderMe(); $('dProf').close();
@@ -533,7 +558,7 @@ function renderStudio(){
       <label style="margin:0;display:flex;gap:8px;align-items:center;flex:1">Level <input type="range" id="fv" min="0" max="1.5" step=".05" value="${L.fg ? L.fg.gain.value : 1}"></label></div>
       ${L.q.length ? L.q.map((t, i) => `<div class="q"><span>${i === L.i ? '▶ ' : ''}${esc(t.name)}</span><button class="btn ghost sm" data-p="${i}">${i === L.i ? 'Restart' : 'Play'}</button><button class="btn ghost sm" data-d="${i}">Remove</button></div>`).join('') : '<div class="msg">No files yet. Add MP3, WAV, AAC, OGG or any audio your browser can play.</div>'}
       ${L.q.length ? `<div class="ctl"><button class="btn ghost sm" id="pp">${L.el && !L.el.paused ? 'Pause' : 'Resume'}</button><button class="btn ghost sm" id="nx">Next</button></div>` : ''}</div>`
-    : `<div class="panel"><h3>External stream</h3><div class="msg">Listeners hear <b>${esc(my.stream_url)}</b> when they open your station.</div></div>`}
+    : `<div class="panel"><h3>External stream</h3><div class="msg">Listeners hear <b>${esc(my.stream_url)}</b> when they open your station. Go live is only for browser broadcasts: choose “Edit station” and set the source to “From my browser” to use audio files and your microphone.</div></div>`}
   </div></div>`;
   $('ed').onclick = openStation;
   if (!live) return;
@@ -554,6 +579,87 @@ function renderStudio(){
   if ($('nx')) $('nx').onclick = nextTrack;
 }
 
+/* ---- people, friends, upvotes ---- */
+const COUNTRIES = 'Argentina,Australia,Austria,Belgium,Brazil,Canada,Chile,China,Colombia,Denmark,Egypt,Finland,France,Germany,Ghana,Greece,India,Indonesia,Ireland,Italy,Japan,Kenya,Mexico,Netherlands,New Zealand,Nigeria,Norway,Pakistan,Peru,Philippines,Poland,Portugal,South Africa,South Korea,Spain,Sweden,Switzerland,Turkey,Ukraine,United Kingdom,United States,Other'.split(',');
+const opts = (a, first) => `<option value="">${first}</option>` + a.map(c => `<option>${c}</option>`).join('');
+const GEN2 = GENRES.filter(g => g !== 'top');
+$('pCo').innerHTML = opts(COUNTRIES, 'Prefer not to say'); $('fCo').innerHTML = opts(COUNTRIES, 'Any country'); $('cGenSel').innerHTML = opts(GEN2, 'Any genre');
+$('cSortSel').onchange = () => { cSort = $('cSortSel').value; loadComm(true); };
+$('cGenSel').onchange = () => { cGen = $('cGenSel').value; loadComm(true); };
+
+async function refreshVote(){
+  const b = $('pVote'); if (!P || P.kind !== 'comm') return void (b.hidden = true);
+  b.hidden = false; P.mine = false;
+  if (sb && user){ P.mine = !!(await sb.from('station_votes').select('station_id').eq('station_id', P.id).eq('user_id', user.id).maybeSingle()).data; }
+  b.textContent = '▲ ' + (P.votes || 0); b.classList.toggle('on', P.mine);
+}
+$('pVote').onclick = async () => {
+  if (!P || !need()) return; if (!sb) return toast('Upvotes need Supabase connected.');
+  if (P.mine){ await sb.from('station_votes').delete().eq('station_id', P.id).eq('user_id', user.id); P.votes = Math.max(0, P.votes - 1); }
+  else { const r = await sb.from('station_votes').insert({station_id:P.id}); if (r.error) return toast(r.error.message); P.votes++; }
+  if (window.CS && window.CS[P.id]) window.CS[P.id].votes = P.votes; refreshVote();
+};
+
+const pf = {q:'', country:'', genre:'', sort:'votes', friends:false, live:false}; let pOff = 0, fmap = {}, pT;
+$('fGen').innerHTML = ['any'].concat(GEN2).map(g => `<button data-g="${g}" class="${g === 'any' ? 'on' : ''}">${g}</button>`).join('');
+$('fGen').querySelectorAll('button').forEach(b => b.onclick = () => { pf.genre = b.dataset.g === 'any' ? '' : b.dataset.g; $('fGen').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); loadPeople(true); });
+$('fTog').querySelectorAll('button').forEach(b => b.onclick = () => { pf[b.dataset.k] = !pf[b.dataset.k]; b.classList.toggle('on', pf[b.dataset.k]); loadPeople(true); });
+$('fCo').onchange = () => { pf.country = $('fCo').value; loadPeople(true); };
+$('fSort').onchange = () => { pf.sort = $('fSort').value; loadPeople(true); };
+$('fq').oninput = () => { clearTimeout(pT); pT = setTimeout(() => { pf.q = $('fq').value.trim(); loadPeople(true); }, 400); };
+$('pm').onclick = () => loadPeople(false);
+async function loadFriends(){
+  fmap = {}; if (!sb || !user) return;
+  ((await sb.from('friendships').select('*').limit(500)).data || []).forEach(f => { const o = f.requester === user.id ? f.addressee : f.requester; fmap[o] = {id:f.id, status:f.status, out:f.requester === user.id}; });
+}
+const fBtn = id => { const f = fmap[id];
+  return !f ? `<button class="btn sm" data-fa="add" data-id="${id}">Add friend</button>`
+    : f.status === 'accepted' ? `<button class="btn ghost sm" data-fa="rm" data-id="${id}">Friends ✓</button>`
+    : f.out ? `<button class="btn ghost sm" data-fa="rm" data-id="${id}">Requested</button>`
+    : `<button class="btn sm" data-fa="acc" data-id="${id}">Accept</button>`; };
+async function renderReq(){
+  const ids = Object.keys(fmap).filter(k => fmap[k].status === 'pending' && !fmap[k].out);
+  if (!ids.length) return void ($('frq').innerHTML = '');
+  const a = (await sb.from('profiles').select('id,username,display_name,avatar_url').in('id', ids)).data || [];
+  $('frq').innerHTML = '<h3 class="disp" style="margin:14px 0 8px">Friend requests</h3>' + a.map(p => `<div class="prow"><div class="av">${pic(p.avatar_url, 'a')}</div><div class="t"><b>${esc(who(p))}</b><small>@${esc(p.username)}</small></div><div class="acts2">${fBtn(p.id)}<button class="btn ghost sm" data-fa="rm" data-id="${p.id}">Decline</button></div></div>`).join('');
+}
+async function loadPeople(reset){
+  const list = $('plist');
+  if (!sb){ list.innerHTML = '<div class="empty">Connect Supabase to find people and add friends.</div>'; return; }
+  if (reset){ pOff = 0; list.innerHTML = ''; await loadFriends(); renderReq(); }
+  let r = sb.from('people').select('*').range(pOff, pOff + 19);
+  if (pf.q){ const q = pf.q.replace(/[%,()]/g, ''); r = r.or(`username.ilike.%${q}%,display_name.ilike.%${q}%,station_name.ilike.%${q}%`); }
+  if (pf.country) r = r.eq('country', pf.country);
+  if (pf.genre) r = r.contains('genres', [pf.genre]);
+  if (pf.live) r = r.eq('is_live', true);
+  if (pf.friends){
+    const ids = Object.keys(fmap).filter(k => fmap[k].status === 'accepted');
+    if (!ids.length){ list.innerHTML = '<div class="empty">No friends yet. Add some from the full list.</div>'; $('pm').hidden = true; return; }
+    r = r.in('id', ids);
+  }
+  if (user) r = r.neq('id', user.id);
+  r = pf.sort === 'new' ? r.order('created_at', {ascending:false}) : pf.sort === 'az' ? r.order('username') : r.order('votes', {ascending:false, nullsFirst:false}).order('created_at', {ascending:false});
+  const a = (await r).data || []; pOff += 20;
+  list.insertAdjacentHTML('beforeend', a.map(p => `<div class="prow"><div class="av">${pic(p.avatar_url, 'a')}</div><div class="t"><b>${esc(who(p))}${p.is_live && Date.now() - new Date(p.live_at || 0) < 90000 ? '<em class="live">LIVE</em>' : ''}</b>
+    <small>@${esc(p.username)}${p.country ? ' · ' + esc(p.country) : ''}</small>
+    <small>${p.station_id ? 'wmz/' + esc(p.station_tag) + ' · ' + esc(p.station_name) + ' · ▲ ' + (p.votes || 0) + ((p.genres || []).length ? ' · ' + esc(p.genres.slice(0, 3).join(', ')) : '') : 'No station yet'}</small></div>
+    <div class="acts2">${user ? fBtn(p.id) : ''}${p.station_id ? `<button class="btn ghost sm" data-ls="${p.station_id}">Listen</button>` : ''}</div></div>`).join(''));
+  if (!list.children.length) list.innerHTML = '<div class="empty">No one matches those filters.</div>';
+  $('pm').hidden = a.length < 20;
+}
+document.addEventListener('click', async e => {
+  const f = e.target.closest('[data-fa]'), l = e.target.closest('[data-ls]');
+  if (f){
+    if (!need()) return; const id = f.dataset.id, act = f.dataset.fa;
+    if (act === 'rm' && fmap[id] && fmap[id].status === 'accepted' && !confirm('Remove this friend?')) return;
+    const r = act === 'add' ? await sb.from('friendships').insert({addressee:id})
+      : act === 'acc' ? await sb.from('friendships').update({status:'accepted'}).eq('id', fmap[id].id)
+      : await sb.from('friendships').delete().eq('id', fmap[id].id);
+    if (r.error) toast(r.error.message); loadPeople(true);
+  }
+  if (l){ const s = (await sb.from('stations').select('*').eq('id', l.dataset.ls).maybeSingle()).data; if (s){ window.CS = window.CS || {}; window.CS[s.id] = s; playComm(s); } }
+});
+
 /* ---- rooms + chat ---- */
 async function renderRooms(){
   const rs = await db.rooms();
@@ -569,12 +675,12 @@ $('rGo').onclick = async () => {
 };
 let chCh = null, chName = null;
 async function openChat(name, title, sub){
-  chName = name; $('cT').textContent = title; $('cS').textContent = sub; drawChat(await db.msgs(name)); $('dChat').showModal();
-  if (sb) chCh = sb.channel('chat-' + name).on('postgres_changes', {event:'INSERT', schema:'public', table:'messages', filter:'channel=eq.' + name}, async () => drawChat(await db.msgs(name))).subscribe();
+  chName = name; $('cF').value = ''; $('cT').textContent = title; $('cS').textContent = sub; drawChat(await db.msgs(name)); $('dChat').showModal();
+  if (sb) chCh = sb.channel('chat-' + name).on('postgres_changes', {event:'INSERT', schema:'public', table:'messages', filter:'channel=eq.' + name}, async () => drawChat(await db.msgs(name, $('cF').value.trim()))).subscribe();
 }
 function drawChat(a){
   const me = user && user.username;
-  $('cL').innerHTML = a.length ? a.map(m => `<p class="${m.profiles && m.profiles.username === me ? 'me' : ''}"><i>${esc(who(m.profiles))}</i>${esc(m.body)}</p>`).join('') : '<div class="msg">Quiet in here. Say hello.</div>';
+  $('cL').innerHTML = a.length ? a.map(m => `<p class="${m.profiles && m.profiles.username === me ? 'me' : ''}"><i>${esc(who(m.profiles))}</i>${esc(m.body)}</p>`).join('') : ($('cF').value ? '<div class="msg">No messages match your search.</div>' : '<div class="msg">Quiet in here. Say hello.</div>');
   $('cL').scrollTop = 1e9;
 }
 async function sendMsg(){
@@ -582,6 +688,7 @@ async function sendMsg(){
   $('cI').value = ''; try { await db.send(chName, x); if (!sb) drawChat(await db.msgs(chName)); } catch(e){ $('cS').textContent = e.message; }
 }
 $('cSend').onclick = sendMsg; $('cI').onkeydown = e => { if (e.key === 'Enter') sendMsg(); };
+let cfT; $('cF').oninput = () => { clearTimeout(cfT); cfT = setTimeout(async () => drawChat(await db.msgs(chName, $('cF').value.trim())), 300); };
 $('dChat').onclose = () => { if (chCh){ sb.removeChannel(chCh); chCh = null; } };
 
 /* ---- boot ---- */
