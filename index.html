@@ -73,7 +73,7 @@ dialog::backdrop{background:rgba(8,8,12,.7)}dialog h3{font-size:24px;margin-bott
 label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
 .acts{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
 .msg{font-size:13px;color:var(--mute);margin-top:8px}
-.off{position:fixed;left:-9999px;width:1px;height:1px;opacity:0}
+.vh{position:fixed;left:-9999px;width:1px;height:1px;opacity:0}
 .imgf{display:flex;gap:12px;align-items:center}.pv{border-radius:16px;overflow:hidden;background:var(--line);flex:none}
 .imgf.a .pv{width:72px;height:72px}.imgf.b .pv{width:150px;height:56px}.ib{display:flex;gap:8px;flex-wrap:wrap}
 .two{display:flex;gap:10px}.two>*{flex:1}.two>.fit{flex:none}
@@ -122,6 +122,8 @@ body{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
 .net{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid var(--line)}
 .net.bad{background:#ff3b5c;color:#fff;border-color:#ff3b5c}
 .danger{color:#ff3b5c!important;border-color:#ff3b5c!important}
+.onbar:not(.off){background:#14131a;color:#fff;border:1px solid #2d2d38}
+.onbar .btn{flex:none}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.dot,.eq i{animation:none!important}}
 </style>
 </head>
@@ -570,20 +572,20 @@ function renderStudio(){
     ${live ? `
     <div class="onbar ${L.on ? '' : 'off'}"><span class="dot"></span><b>${L.on ? 'You’re on air' : 'Off air'}</b><span id="lc">${Object.values(L.peers).filter(p => p.pc.connectionState === 'connected').length} listening</span><button class="btn sm" id="gl">${L.on ? 'End broadcast' : 'Go live'}</button></div>
     <label class="tog"><input type="checkbox" id="mm" ${L.mute ? 'checked' : ''}><span>Play to listeners, mute on this device<small>Your songs still go out to everyone tuned in, but your own speakers stay silent. Your microphone is never played back to you.</small></span></label>
-    <div class="panel"><h3>How it works</h3>
+    <div class="panel"><h3>How it works <small style="color:var(--mute);font-weight:400">· app v6</small></h3>
       
       <div class="msg">Listeners hear whatever you play below plus your microphone. Browser broadcasts suit small audiences, so use an external stream for large ones.</div></div>
     <div class="panel"><h3>Microphone</h3><div class="ctl"><button class="btn ${L.mic ? '' : 'ghost'} sm" id="mc">${L.mic ? 'Mic on' : 'Mic off'}</button>
       <label style="margin:0;display:flex;gap:8px;align-items:center;flex:1">Volume <input type="range" id="mv" min="0" max="2" step=".05" value="${L.mg ? L.mg.gain.value : 1}"></label></div></div>
-    <div class="panel"><h3>Audio files</h3><div class="ctl"><button class="btn ghost sm" id="ab">Add audio files</button><input type="file" id="af" class="off" tabindex="-1" aria-hidden="true" accept="audio/*,video/mp4,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus,.flac,.weba,.webm" multiple>
+    <div class="panel"><h3>Audio files</h3><div class="ctl"><button class="btn ghost sm" id="ab">Add audio files</button><input type="file" id="af" class="vh" tabindex="-1" aria-hidden="true" accept="audio/*,video/mp4,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus,.flac,.weba,.webm" multiple>
       <label style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="lp" ${L.loop ? 'checked' : ''}>Loop playlist</label>
       <label style="margin:0;display:flex;gap:8px;align-items:center;flex:1">Level <input type="range" id="fv" min="0" max="1.5" step=".05" value="${L.fg ? L.fg.gain.value : 1}"></label></div>
       ${L.q.length ? L.q.map((t, i) => `<div class="q"><span>${i === L.i ? '▶ ' : ''}${esc(t.name)}</span><button class="btn ghost sm" data-p="${i}">${i === L.i ? 'Restart' : 'Play'}</button><button class="btn ghost sm" data-d="${i}">Remove</button></div>`).join('') : '<div class="msg">No files yet. Add MP3, WAV, AAC, OGG or any audio your browser can play.</div>'}
       ${L.q.length ? `<div class="ctl"><button class="btn ghost sm" id="pp">${L.el && !L.el.paused ? 'Pause' : 'Resume'}</button><button class="btn ghost sm" id="nx">Next</button></div>` : ''}</div>`
-    : `<div class="panel"><h3>External stream</h3><div class="msg">Listeners hear <b>${esc(my.stream_url)}</b> when they open your station. Go live is only for browser broadcasts: choose “Edit station” and set the source to “From my browser” to use audio files and your microphone.</div></div>`}
+    : `<div class="panel"><h3>External stream</h3><div class="msg">Listeners hear <b>${esc(my.stream_url)}</b> when they open your station. Go live is only for browser broadcasts: choose “Edit station” and set the source to “From my browser” to use audio files and your microphone.</div><div class="ctl"><button class="btn" id="tolive">Broadcast from my browser instead</button></div></div>`}
   </div></div>`;
   $('ed').onclick = openStation;
-  if (!live) return;
+  if (!live){ $('tolive').onclick = async () => { try { my = await db.save({mode:'live'}); renderStudio(); toast('Switched. Press Go live to start.'); } catch(e){ toast(e.message); } }; return; }
   $('gl').onclick = () => L.on ? endLive() : goLive(); $('mc').onclick = toggleMic;
   $('mm').onchange = e => { eng(); L.mute = e.target.checked; L.mon.gain.value = L.mute ? 0 : 1; };
   $('mv').oninput = e => { eng(); L.mg.gain.value = +e.target.value; }; $('fv').oninput = e => { eng(); L.fg.gain.value = +e.target.value; };
