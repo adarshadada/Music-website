@@ -81,7 +81,27 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
 .chat p{max-width:85%;background:var(--bg);padding:6px 12px;border-radius:16px;border:1px solid var(--line)}
 .chat p.me{align-self:flex-end;background:var(--accent);color:var(--on);border-color:var(--accent)}
 .chat p i{display:block;font-size:11px;opacity:.65;font-style:normal}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.seg{position:sticky;top:8px;z-index:5}
+.card,.row,.btn,.chips button{transition:transform .15s,border-color .15s,background .15s}
+.card:hover,.row:hover{transform:translateY(-2px);border-color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.sh h2{font-size:34px;line-height:1.05}
+.onair{display:flex;gap:10px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.onair:empty{display:none}
+.onair button{flex:none;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 16px 5px 5px;font-weight:500}
+.onair .lg{display:block;width:34px;height:34px;border-radius:50%}
+.dot{width:9px;height:9px;border-radius:50%;background:#ff3b5c;animation:pulse 1.4s infinite;flex:none}
+@keyframes pulse{50%{opacity:.25}}
+.eq{display:none;gap:3px;align-items:flex-end;height:18px}.player.playing .eq{display:flex}
+.eq i{width:3px;height:4px;background:var(--accent);border-radius:2px;animation:eq .9s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}.eq i:nth-child(4){animation-delay:.1s}
+@keyframes eq{to{height:18px}}
+.onbar{display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);border-radius:18px;padding:12px 14px;margin-top:14px}
+.onbar.off{background:var(--card);color:var(--ink);border:1px solid var(--line)}.onbar.off .dot{background:var(--mute);animation:none}
+.onbar b{flex:1}
+.tog{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:16px;cursor:pointer;font-weight:500}
+.tog input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.tog small{display:block;color:var(--mute);font-weight:400}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.dot,.eq i{animation:none!important}}
 </style>
 </head>
 <body>
@@ -103,6 +123,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
   <div class="sh"><h2>Community</h2><button class="btn" id="goStudio">Start yours</button></div>
   <p class="lead">Stations run by listeners like you. Each one has its own wave tag, like <b>wmz/ember-fox</b>, instead of a number.</p>
   <input id="cq" type="search" placeholder="Search by name or wave tag" aria-label="Search community stations">
+  <div class="onair" id="oa" aria-label="On air now"></div>
   <div class="grid big" id="cg"></div><button class="btn ghost more" id="cm" hidden>Show more</button>
 </section>
 <section class="tab" id="t-rooms">
@@ -114,7 +135,7 @@ label{display:block;font-weight:500;margin:14px 0 5px;font-size:14px}
 
 <div id="toast"><span id="ts"></span></div>
 <div class="player" id="pl"><div class="lg" id="pArt"></div><div class="t"><b id="pT"></b><small id="pS"></small></div>
-  <button class="sb" id="pChat" hidden>Chat</button><button class="pb" id="pBtn" aria-label="Play or pause">II</button><button class="sb" id="pX" aria-label="Close player">✕</button></div>
+  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><button class="sb" id="pChat" hidden>Chat</button><button class="pb" id="pBtn" aria-label="Play or pause">II</button><button class="sb" id="pX" aria-label="Close player">✕</button></div>
 <input type="file" id="file" accept="image/*" hidden>
 
 <dialog id="dAuth"><h3 id="aT">Sign in</h3>
@@ -256,6 +277,8 @@ function playUrl(p, url){
   stopListen(); au.srcObject = null; showPlayer(p); au.src = url; toast('Connecting to ' + p.name + '...');
   au.play().then(() => toast('')).catch(() => toast('This station won’t play right now. Try another one.'));
 }
+au.onplaying = () => $('pl').classList.add('playing');
+au.onpause = au.onended = () => $('pl').classList.remove('playing');
 au.onerror = () => { if (P && !au.srcObject) toast(P.name + ' is offline. Try another one.'); };
 $('pBtn').onclick = () => { if (au.paused){ au.play(); $('pBtn').textContent = 'II'; } else { au.pause(); $('pBtn').textContent = '▶'; } };
 $('pX').onclick = () => { au.pause(); au.removeAttribute('src'); au.srcObject = null; stopListen(); P = null; $('pl').classList.remove('on'); document.querySelectorAll('.card.on').forEach(c => c.classList.remove('on')); };
@@ -327,6 +350,10 @@ async function loadComm(reset){
   }).join(''));
   window.CS = Object.assign(window.CS || {}, Object.fromEntries(a.map(s => [s.id, s])));
   if (!$('cg').children.length) $('cg').innerHTML = '<div class="empty">No community stations yet. Be the first: open Studio and start yours.</div>';
+  if (reset){
+    $('oa').innerHTML = a.filter(isLive).map(s => `<button data-id="${esc(s.id)}"><span class="lg">${pic(s.logo_url, 'a')}</span><span class="dot"></span>${esc(s.name)}</button>`).join('');
+    $('oa').querySelectorAll('button').forEach(b => b.onclick = () => playComm(window.CS[b.dataset.id]));
+  }
   $('cm').hidden = a.length < 24;
   $('cg').querySelectorAll('.card').forEach(b => b.onclick = () => playComm(window.CS[b.dataset.id]));
 }
@@ -450,7 +477,7 @@ const L = {q:[], i:-1, loop:false, on:false, peers:{}, mic:null};
 function eng(){
   if (L.ctx) return;
   L.ctx = new (window.AudioContext || window.webkitAudioContext)(); L.dest = L.ctx.createMediaStreamDestination();
-  L.fg = L.ctx.createGain(); L.mg = L.ctx.createGain(); L.fg.connect(L.dest); L.fg.connect(L.ctx.destination); L.mg.connect(L.dest);
+  L.fg = L.ctx.createGain(); L.mg = L.ctx.createGain(); L.fg.connect(L.dest); L.mon = L.ctx.createGain(); L.mon.gain.value = L.mute ? 0 : 1; L.fg.connect(L.mon); L.mon.connect(L.ctx.destination); L.mg.connect(L.dest);
   L.el = new Audio(); L.el.onended = nextTrack; L.ctx.createMediaElementSource(L.el).connect(L.fg);
 }
 async function playTrack(i){ eng(); await L.ctx.resume(); L.i = i; L.el.src = L.q[i].url; await L.el.play(); renderStudio(); }
@@ -494,8 +521,10 @@ function renderStudio(){
     <div class="lg">${pic(my.logo_url, 'a')}</div>
     <div class="sh" style="margin-top:10px"><div style="flex:1"><h2 style="font-size:26px">${esc(my.name)}${L.on ? '<em class="live">LIVE</em>' : ''}</h2><span class="tag" style="background:${esc(my.accent)};color:${onc(my.accent)}">wmz/${esc(my.tag)}</span></div><button class="btn ghost sm" id="ed">Edit station</button></div>
     ${live ? `
-    <div class="panel"><h3>Broadcast</h3>
-      <div class="ctl"><button class="btn" id="gl">${L.on ? 'End broadcast' : 'Go live'}</button><span id="lc">${Object.keys(L.peers).length} listening</span></div>
+    <div class="onbar ${L.on ? '' : 'off'}"><span class="dot"></span><b>${L.on ? 'You’re on air' : 'Off air'}</b><span id="lc">${Object.values(L.peers).filter(p => p.pc.connectionState === 'connected').length} listening</span><button class="btn sm" id="gl">${L.on ? 'End broadcast' : 'Go live'}</button></div>
+    <label class="tog"><input type="checkbox" id="mm" ${L.mute ? 'checked' : ''}><span>Play to listeners, mute on this device<small>Your songs still go out to everyone tuned in, but your own speakers stay silent. Your microphone is never played back to you.</small></span></label>
+    <div class="panel"><h3>How it works</h3>
+      
       <div class="msg">Listeners hear whatever you play below plus your microphone. Browser broadcasts suit small audiences, so use an external stream for large ones.</div></div>
     <div class="panel"><h3>Microphone</h3><div class="ctl"><button class="btn ${L.mic ? '' : 'ghost'} sm" id="mc">${L.mic ? 'Mic on' : 'Mic off'}</button>
       <label style="margin:0;display:flex;gap:8px;align-items:center;flex:1">Volume <input type="range" id="mv" min="0" max="2" step=".05" value="${L.mg ? L.mg.gain.value : 1}"></label></div></div>
@@ -509,6 +538,7 @@ function renderStudio(){
   $('ed').onclick = openStation;
   if (!live) return;
   $('gl').onclick = () => L.on ? endLive() : goLive(); $('mc').onclick = toggleMic;
+  $('mm').onchange = e => { eng(); L.mute = e.target.checked; L.mon.gain.value = L.mute ? 0 : 1; };
   $('mv').oninput = e => { eng(); L.mg.gain.value = +e.target.value; }; $('fv').oninput = e => { eng(); L.fg.gain.value = +e.target.value; };
   $('lp').onchange = e => L.loop = e.target.checked;
   $('ab').onclick = () => $('af').click();
