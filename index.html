@@ -238,7 +238,7 @@ let tt; function toast(m){ const s = $('ts'); s.textContent = m; s.style.display
 if (sb) ls.set('wr_user', null); // drop any leftover demo-mode profile (its id "demo" isn't a valid uuid)
 let user = sb ? null : ls.get('wr_user', null), my = null, tab = 'real';
 const au = new Audio(); au.preload = 'none';
-const isLive = s => s.is_live && Date.now() - new Date(s.live_at || 0) < 90000;
+const isLive = s => s.is_live && Date.now() - new Date(s.live_at || 0) < 180000;
 const who = u => (u && (u.display_name || u.username)) || 'guest';
 
 /* ---- data layer: Supabase when connected, localStorage otherwise ---- */
@@ -269,7 +269,7 @@ const db = {
   },
   async setLive(v){
     if (!my) return; const p = {is_live:v, live_at:new Date().toISOString()};
-    if (sb) await sb.from('stations').update(p).eq('id', my.id); else { Object.assign(my, p); db.save(p); }
+    if (sb) return (await sb.from('stations').update(p).eq('id', my.id)).error; else { Object.assign(my, p); db.save(p); }
   },
   async rooms(){
     if (sb) return (await sb.from('rooms').select('*,profiles!owner(username,display_name)').order('created_at', {ascending:false}).limit(40)).data || [];
@@ -331,7 +331,7 @@ const flush = (pc, q) => { q.splice(0).forEach(c => pc.addIceCandidate(c).catch(
 function stopListen(){ if (LS){ try { LS.pc.close(); } catch(e){} if (sb) sb.removeChannel(LS.ch); LS = null; } }
 function listenLive(s, p){
   stopListen(); au.pause(); au.removeAttribute('src'); showPlayer(p);
-  if (!sb || !isLive(s)){ toast(s.name + ' isn’t live right now.'); $('pBtn').textContent = '▶'; return; }
+  if (!sb || !s.is_live){ toast(s.name + ' isn’t live right now.'); $('pBtn').textContent = '▶'; return; }
   const me = Math.random().toString(36).slice(2), ch = sb.channel('live:' + s.id), pc = new RTCPeerConnection(RTC), q = [];
   LS = {ch, pc, id:me}; toast('Tuning in...');
   const send = (event, payload) => ch.send({type:'broadcast', event, payload});
@@ -544,7 +544,7 @@ async function goLive(){
   });
   ch.on('broadcast', {event:'answer'}, async ({payload:x}) => { const p = L.peers[x.peer]; if (p){ await p.pc.setRemoteDescription(x.sdp); flush(p.pc, p.q); } });
   ch.on('broadcast', {event:'ice'}, ({payload:x}) => { const p = L.peers[x.peer]; if (x.to === 'host' && p) addIce(p.pc, p.q, x.c); });
-  ch.on('broadcast', {event:'admin-cut'}, () => checkCut()); L.since = Date.now(); ch.subscribe(); await db.setLive(true); L.hb = setInterval(async () => { if (!(await checkCut())) db.setLive(true); }, 30000); L.on = true; renderStudio();
+  ch.on('broadcast', {event:'admin-cut'}, () => checkCut()); L.since = Date.now(); const err = await db.setLive(true); if (err) return toast('Couldn’t go live: ' + err.message + '. Run wave.radio-v5-upgrade.sql if you haven’t.'); ch.subscribe(); L.hb = setInterval(async () => { if (!(await checkCut())) db.setLive(true); }, 30000); L.on = true; renderStudio(); toast('You’re on air. Listeners can tune in from the Community tab.');
 }
 async function checkCut(){
   if (!L.on || !sb || !my) return false;
@@ -558,7 +558,7 @@ async function endLive(){
   Object.values(L.peers).forEach(p => p.pc.close()); L.peers = {}; if (L.ch && sb) sb.removeChannel(L.ch);
   await db.setLive(false); if (tab === 'studio') renderStudio();
 }
-addEventListener('pagehide', () => { if (L.on && sb) sb.from('stations').update({is_live:false}).eq('id', my.id); });
+addEventListener('pagehide', e => { if (!e.persisted && L.on && sb) sb.from('stations').update({is_live:false}).eq('id', my.id); });
 function renderStudio(){
   const el = $('sd');
   if (!user) return void (el.innerHTML = '<div class="empty">Sign in to start your own station. You get a unique wave tag, a profile, and a studio to broadcast from.<br><br><button class="btn" id="si">Sign in</button></div>', $('si').onclick = () => openAuth('in'));
@@ -662,7 +662,7 @@ async function loadPeople(reset){
   if (user) r = r.neq('id', user.id);
   r = pf.sort === 'new' ? r.order('created_at', {ascending:false}) : pf.sort === 'az' ? r.order('username') : r.order('votes', {ascending:false, nullsFirst:false}).order('created_at', {ascending:false});
   const a = (await r).data || []; pOff += 20;
-  list.insertAdjacentHTML('beforeend', a.map(p => `<div class="prow"><div class="av">${pic(p.avatar_url, 'a')}</div><div class="t"><b>${esc(who(p))}${p.is_live && Date.now() - new Date(p.live_at || 0) < 90000 ? '<em class="live">LIVE</em>' : ''}</b>
+  list.insertAdjacentHTML('beforeend', a.map(p => `<div class="prow"><div class="av">${pic(p.avatar_url, 'a')}</div><div class="t"><b>${esc(who(p))}${p.is_live && Date.now() - new Date(p.live_at || 0) < 180000 ? '<em class="live">LIVE</em>' : ''}</b>
     <small>@${esc(p.username)}${p.country ? ' · ' + esc(p.country) : ''}</small>
     <small>${p.station_id ? 'wmz/' + esc(p.station_tag) + ' · ' + esc(p.station_name) + ' · ▲ ' + (p.votes || 0) + ((p.genres || []).length ? ' · ' + esc(p.genres.slice(0, 3).join(', ')) : '') : 'No station yet'}</small></div>
     <div class="acts2">${user ? fBtn(p.id) : ''}${p.station_id ? `<button class="btn ghost sm" data-ls="${p.station_id}">Listen</button>` : ''}</div></div>`).join(''));
