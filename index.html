@@ -218,6 +218,7 @@ body{max-width:720px}.card{border-radius:24px}.sh h2{font-size:36px}.mark{width:
   <div id="aName"><label for="aU">Username</label><input id="aU" maxlength="24" placeholder="night.owl"></div>
   <div class="msg" id="aM"></div>
   <div id="aCode" hidden><label for="aK">Code from your email</label><input id="aK" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="123456"><button type="button" class="btn" id="aVerify" style="margin-top:10px;width:100%">Verify code</button></div>
+  <div id="aNew" hidden><label for="aNP">New password</label><input id="aNP" type="password" autocomplete="new-password" placeholder="6+ characters"><button type="button" class="btn" id="aSetPw" style="margin-top:10px;width:100%">Save new password</button></div>
   <div class="ctl" id="aAux"><button type="button" class="btn ghost sm" id="aForgot">Forgot password?</button><button type="button" class="btn ghost sm" id="aResend">Resend confirmation email</button></div>
   <div class="acts"><button class="btn ghost" id="aSwap">Create account</button><button class="btn" id="aGo">Sign in</button></div></dialog>
 
@@ -499,7 +500,7 @@ function openAuth(m){
   mode = m; const up = m === 'up';
   $('aT').textContent = $('aGo').textContent = up ? 'Create account' : 'Sign in';
   $('aSwap').textContent = up ? 'I have an account' : 'Create account';
-  $('aDemo').hidden = !!sb; $('aAux').hidden = !sb; $('aCode').hidden = true; $('aMail').hidden = !sb; $('aName').hidden = !(up || !sb); $('aM').textContent = ''; $('dAuth').showModal();
+  $('aDemo').hidden = !!sb; $('aAux').hidden = !sb; $('aCode').hidden = true; $('aNew').hidden = true; $('aMail').hidden = !sb; $('aName').hidden = !(up || !sb); $('aM').textContent = ''; $('dAuth').showModal();
 }
 $('aSwap').onclick = () => openAuth(mode === 'in' ? 'up' : 'in');
 const RED = /^https?:/.test(location.href) ? location.href.split(/[?#]/)[0] : undefined;
@@ -511,8 +512,13 @@ $('aVerify').onclick = async () => {
   $('aM').textContent = 'Checking...';
   const r = await sb.auth.verifyOtp({email, token, type:codeType});
   if (r.error) return void ($('aM').textContent = /expired|invalid/i.test(r.error.message) ? 'That code is wrong or expired. Request a new one.' : r.error.message);
-  if (codeType === 'recovery'){ const pw = prompt('Choose a new password (6+ characters)'); if (pw && pw.length >= 6){ const u = await sb.auth.updateUser({password:pw}); toast(u.error ? u.error.message : 'Password updated.'); } }
+  if (codeType === 'recovery'){ $('aCode').hidden = true; $('aNew').hidden = false; $('aM').textContent = 'Code accepted. Choose a new password.'; return; }
   await loadProfile(r.data.user); $('dAuth').close(); toast('You’re in. Welcome to wave.radio.');
+};
+$('aSetPw').onclick = async () => {
+  const pw = $('aNP').value; if (pw.length < 6) return void ($('aM').textContent = 'Use at least 6 characters.');
+  const u = await sb.auth.updateUser({password:pw}); if (u.error) return void ($('aM').textContent = u.error.message);
+  const ss = (await sb.auth.getSession()).data.session; if (ss) await loadProfile(ss.user); $('dAuth').close(); toast('Password updated. You’re signed in.');
 };
 const mailErr = m => /rate limit|seconds|too many/i.test(m) ? 'Too many emails requested. Wait a minute and try again.' : /sending (confirmation|recovery|email|magic)/i.test(m) ? 'Supabase couldn’t send the email. Check your SMTP settings (Gmail app password with no spaces, port 587).' : m;
 $('aForgot').onclick = async () => {
