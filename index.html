@@ -217,6 +217,7 @@ body{max-width:720px}.card{border-radius:24px}.sh h2{font-size:36px}.mark{width:
   <div id="aMail"><label for="aE">Email</label><input id="aE" type="email" autocomplete="email"><label for="aP">Password</label><input id="aP" type="password" autocomplete="current-password"></div>
   <div id="aName"><label for="aU">Username</label><input id="aU" maxlength="24" placeholder="night.owl"></div>
   <div class="msg" id="aM"></div>
+  <div id="aCode" hidden><label for="aK">Code from your email</label><input id="aK" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="123456"><button type="button" class="btn" id="aVerify" style="margin-top:10px;width:100%">Verify code</button></div>
   <div class="ctl" id="aAux"><button type="button" class="btn ghost sm" id="aForgot">Forgot password?</button><button type="button" class="btn ghost sm" id="aResend">Resend confirmation email</button></div>
   <div class="acts"><button class="btn ghost" id="aSwap">Create account</button><button class="btn" id="aGo">Sign in</button></div></dialog>
 
@@ -498,18 +499,29 @@ function openAuth(m){
   mode = m; const up = m === 'up';
   $('aT').textContent = $('aGo').textContent = up ? 'Create account' : 'Sign in';
   $('aSwap').textContent = up ? 'I have an account' : 'Create account';
-  $('aDemo').hidden = !!sb; $('aAux').hidden = !sb; $('aMail').hidden = !sb; $('aName').hidden = !(up || !sb); $('aM').textContent = ''; $('dAuth').showModal();
+  $('aDemo').hidden = !!sb; $('aAux').hidden = !sb; $('aCode').hidden = true; $('aMail').hidden = !sb; $('aName').hidden = !(up || !sb); $('aM').textContent = ''; $('dAuth').showModal();
 }
 $('aSwap').onclick = () => openAuth(mode === 'in' ? 'up' : 'in');
 const RED = /^https?:/.test(location.href) ? location.href.split(/[?#]/)[0] : undefined;
+let codeType = 'signup';
+function askCode(type, msg){ codeType = type; $('aCode').hidden = false; $('aM').textContent = msg; $('aK').value = ''; $('aK').focus(); }
+$('aVerify').onclick = async () => {
+  const email = $('aE').value.trim(), token = $('aK').value.trim();
+  if (!email || !token) return void ($('aM').textContent = 'Enter your email and the code.');
+  $('aM').textContent = 'Checking...';
+  const r = await sb.auth.verifyOtp({email, token, type:codeType});
+  if (r.error) return void ($('aM').textContent = /expired|invalid/i.test(r.error.message) ? 'That code is wrong or expired. Request a new one.' : r.error.message);
+  if (codeType === 'recovery'){ const pw = prompt('Choose a new password (6+ characters)'); if (pw && pw.length >= 6){ const u = await sb.auth.updateUser({password:pw}); toast(u.error ? u.error.message : 'Password updated.'); } }
+  await loadProfile(r.data.user); $('dAuth').close(); toast('You’re in. Welcome to wave.radio.');
+};
 const mailErr = m => /rate limit|seconds|too many/i.test(m) ? 'Too many emails requested. Wait a minute and try again.' : /sending (confirmation|recovery|email|magic)/i.test(m) ? 'Supabase couldn’t send the email. Check your SMTP settings (Gmail app password with no spaces, port 587).' : m;
 $('aForgot').onclick = async () => {
   const email = $('aE').value.trim(); if (!email) return void ($('aM').textContent = 'Enter your email above first.');
-  const r = await sb.auth.resetPasswordForEmail(email, {redirectTo:RED}); $('aM').textContent = r.error ? mailErr(r.error.message) : 'Check your email (and spam) for a reset link.';
+  const r = await sb.auth.resetPasswordForEmail(email, {redirectTo:RED}); if (r.error) $('aM').textContent = mailErr(r.error.message); else askCode('recovery', 'We emailed you a code. Enter it below, then choose a new password.');
 };
 $('aResend').onclick = async () => {
   const email = $('aE').value.trim(); if (!email) return void ($('aM').textContent = 'Enter your email above first.');
-  const r = await sb.auth.resend({type:'signup', email, options:{emailRedirectTo:RED}}); $('aM').textContent = r.error ? mailErr(r.error.message) : 'Sent again. Check your inbox and spam folder.';
+  const r = await sb.auth.resend({type:'signup', email, options:{emailRedirectTo:RED}}); if (r.error) $('aM').textContent = mailErr(r.error.message); else askCode('signup', 'Sent again. Enter the new code below.');
 };
 if (sb) sb.auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY'){ const pw = prompt('Choose a new password (6+ characters)'); if (pw && pw.length >= 6) sb.auth.updateUser({password:pw}).then(r => toast(r.error ? r.error.message : 'Password updated.')); } });
 const cleanU = s => s.toLowerCase().replace(/[^a-z0-9_.]/g, '');
@@ -527,10 +539,10 @@ $('aGo').onclick = async () => {
     if (mode === 'up'){
       if (name.length < 3){ m.textContent = 'Username needs 3+ letters, numbers, dots or underscores.'; return; }
       r = await sb.auth.signUp({email, password:pw, options:{data:{username:name}, emailRedirectTo:RED}}); if (r.error) throw r.error;
-      if (!r.data.session){ m.textContent = 'Check your email to confirm, then sign in.'; return; }
+      if (!r.data.session) return askCode('signup', 'We emailed you a code. Enter it below to confirm.');
     } else { r = await sb.auth.signInWithPassword({email, password:pw}); if (r.error) throw r.error; }
     await loadProfile(r.data.user); $('dAuth').close();
-  } catch(e){ m.textContent = mailErr(e.message || '') || 'Something went wrong. Try again.'; }
+  } catch(e){ if (/not confirmed/i.test(e.message || '')) return askCode('signup', 'Your email isn’t confirmed yet. Tap “Resend confirmation email”, then enter the code.'); m.textContent = mailErr(e.message || '') || 'Something went wrong. Try again.'; }
 };
 async function loadProfile(u){
   user = (await sb.from('profiles').select('*').eq('id', u.id).maybeSingle()).data || {id:u.id, username:u.email.split('@')[0], accent:'#c8f54b'};
