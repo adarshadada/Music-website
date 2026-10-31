@@ -70,15 +70,15 @@ const day = t => new Date(t).toLocaleDateString();
 const btn = (a, id, t, c = '') => `<button class="b ${c}" data-a="${a}" data-id="${id}">${t}</button>`;
 
 const CFG = {
-  u:{tbl:'profiles', sel:'*,stations(id,name,tag,is_live,live_at)', find:['username','display_name'], order:[['created_at', false]], ph:'Search users',
+  u:{tbl:'profiles', sel:'*,stations!owner(id,name,tag,is_live,live_at)', find:['username','display_name'], order:[['created_at', false]], ph:'Search users',
     row:p => { const s = one(p.stations); return `<div class="row"><div class="t"><b>${esc(p.display_name || p.username)}${p.suspended ? '<em>SUSPENDED</em>' : ''}</b><small>@${esc(p.username)} · ${esc(p.country || 'no country')} · joined ${day(p.created_at)}</small><small>${s ? 'wmz/' + esc(s.tag) + ' · ' + esc(s.name) + (fresh(s) ? ' · LIVE' : '') : 'No station'}</small></div>
       <div class="ac">${fresh(s) ? btn('cut', s.id, 'Cut broadcast', 'warn') : ''}${p.suspended ? btn('uns', p.id, 'Unsuspend') : btn('sus', p.id, 'Suspend')}${btn('delu', p.id, 'Delete user', 'danger')}</div></div>`; }},
-  s:{tbl:'stations', sel:'*,profiles(username)', find:['name','tag'], order:[['is_live', false], ['created_at', false]], ph:'Search stations or wave tags',
+  s:{tbl:'stations', sel:'*,profiles!owner(username)', find:['name','tag'], order:[['is_live', false], ['created_at', false]], ph:'Search stations or wave tags',
     row:s => `<div class="row"><div class="t"><b>${esc(s.name)}${fresh(s) ? '<em>LIVE</em>' : ''}</b><small>wmz/${esc(s.tag)} · by @${esc((one(s.profiles) || {}).username)} · ▲ ${s.votes || 0} · ${esc(s.mode)}</small></div>
       <div class="ac">${fresh(s) ? btn('cut', s.id, 'Cut broadcast', 'warn') : ''}${btn('dels', s.id, 'Delete station', 'danger')}</div></div>`},
-  r:{tbl:'rooms', sel:'*,profiles(username)', find:['name','topic'], order:[['created_at', false]], ph:'Search rooms',
+  r:{tbl:'rooms', sel:'*,profiles!owner(username)', find:['name','topic'], order:[['created_at', false]], ph:'Search rooms',
     row:r => `<div class="row"><div class="t"><b>${esc(r.name)}</b><small>${esc(r.topic || 'No topic')} · by @${esc((one(r.profiles) || {}).username)} · ${day(r.created_at)}</small></div><div class="ac">${btn('delr', r.id, 'Delete room', 'danger')}</div></div>`},
-  m:{tbl:'messages', sel:'*,profiles(username)', find:['body'], order:[['created_at', false]], ph:'Search chat messages',
+  m:{tbl:'messages', sel:'*,profiles!user_id(username)', find:['body'], order:[['created_at', false]], ph:'Search chat messages',
     row:m => `<div class="row"><div class="t"><b>${esc(m.body)}</b><small>@${esc((one(m.profiles) || {}).username)} · ${esc(m.channel)} · ${new Date(m.created_at).toLocaleString()}</small></div><div class="ac">${btn('delm', m.id, 'Delete', 'danger')}</div></div>`}
 };
 const page = {}, qs = {};
