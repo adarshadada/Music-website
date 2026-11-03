@@ -11,7 +11,7 @@ async function refreshVote(){
   const b = $('pVote'); if (!P || P.kind !== 'comm') return void (b.hidden = true);
   b.hidden = false; P.mine = false;
   if (sb && user){ P.mine = !!(await sb.from('station_votes').select('station_id').eq('station_id', P.id).eq('user_id', user.id).maybeSingle()).data; }
-  b.textContent = '▲ ' + (P.votes || 0); b.classList.toggle('on', P.mine);
+  b.textContent = (P.mine ? 'Upvoted' : 'Upvote') + ' (' + (P.votes || 0) + ')'; b.classList.toggle('on', P.mine);
 }
 $('pVote').onclick = async () => {
   if (!P || !need()) return; if (!sb) return toast('Upvotes need Supabase connected.');
@@ -34,7 +34,7 @@ async function loadFriends(){
 }
 const fBtn = id => { const f = fmap[id];
   return !f ? `<button class="btn sm" data-fa="add" data-id="${id}">Add friend</button>`
-    : f.status === 'accepted' ? `<button class="btn ghost sm" data-fa="rm" data-id="${id}">Friends ✓</button>`
+    : f.status === 'accepted' ? `<button class="btn ghost sm" data-fa="rm" data-id="${id}">Friends</button>`
     : f.out ? `<button class="btn ghost sm" data-fa="rm" data-id="${id}">Requested</button>`
     : `<button class="btn sm" data-fa="acc" data-id="${id}">Accept</button>`; };
 async function renderReq(){
@@ -62,7 +62,7 @@ async function loadPeople(reset){
   const a = (await r).data || []; pOff += 20;
   list.insertAdjacentHTML('beforeend', a.map(p => `<div class="prow"><div class="av">${pic(p.avatar_url, 'a')}</div><div class="t"><b>${esc(who(p))}${p.is_live && Date.now() - new Date(p.live_at || 0) < 180000 ? '<em class="live">LIVE</em>' : ''}</b>
     <small>@${esc(p.username)}${p.country ? ' · ' + esc(p.country) : ''}</small>
-    <small>${p.station_id ? 'wmz/' + esc(p.station_tag) + ' · ' + esc(p.station_name) + ' · ▲ ' + (p.votes || 0) + ((p.genres || []).length ? ' · ' + esc(p.genres.slice(0, 3).join(', ')) : '') : 'No station yet'}</small></div>
+    <small>${p.station_id ? 'wmz/' + esc(p.station_tag) + ' · ' + esc(p.station_name) + ' · ' + vt(p.votes || 0) + ((p.genres || []).length ? ' · ' + esc(p.genres.slice(0, 3).join(', ')) : '') : 'No station yet'}</small></div>
     <div class="acts2">${user ? fBtn(p.id) : ''}${p.station_id ? `<button class="btn ghost sm" data-ls="${p.station_id}">Listen</button>` : ''}</div></div>`).join(''));
   if (!list.children.length) list.innerHTML = '<div class="empty">No one matches those filters.</div>';
   $('pm').hidden = a.length < 20;

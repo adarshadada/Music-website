@@ -31,7 +31,7 @@ const RTC = {iceServers:[{urls:'stun:stun.l.google.com:19302'},
   {urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'], username:'openrelayproject', credential:'openrelayproject'}]}; // free shared relay; use your own TURN for production
 function showPlayer(p){
   P = p; $('pl').classList.add('on'); $('pArt').innerHTML = pic(p.img, 'a');
-  $('pT').textContent = p.name; $('pS').textContent = p.sub; $('pChat').hidden = p.kind !== 'comm'; $('pBtn').textContent = 'II'; refreshVote();
+  $('pT').textContent = p.name; $('pS').textContent = p.sub; $('pChat').hidden = p.kind !== 'comm'; setPlayIcon(true); refreshVote();
   document.querySelectorAll('.card').forEach(c => c.classList.toggle('on', c.dataset.id === p.id));
 }
 function playUrl(p, url){
@@ -41,7 +41,7 @@ function playUrl(p, url){
 au.onplaying = () => $('pl').classList.add('playing');
 au.onpause = au.onended = () => $('pl').classList.remove('playing');
 au.onerror = () => { if (P && !au.srcObject) toast(P.name + ' is offline. Try another one.'); };
-$('pBtn').onclick = () => { if (au.paused){ au.play(); $('pBtn').textContent = 'II'; } else { au.pause(); $('pBtn').textContent = '▶'; } };
+$('pBtn').onclick = () => { if (au.paused){ au.play(); setPlayIcon(true); } else { au.pause(); setPlayIcon(false); } };
 $('pX').onclick = () => { au.pause(); au.removeAttribute('src'); au.srcObject = null; stopListen(); P = null; $('pl').classList.remove('on'); document.querySelectorAll('.card.on').forEach(c => c.classList.remove('on')); };
 $('pChat').onclick = () => P && openChat('station:' + P.id, P.name, 'Station chat');
 
@@ -51,11 +51,11 @@ const flush = (pc, q) => { q.splice(0).forEach(c => pc.addIceCandidate(c).catch(
 function stopListen(){ if (LS){ try { LS.pc.close(); } catch(e){} if (sb) sb.removeChannel(LS.ch); LS = null; } }
 function listenLive(s, p){
   stopListen(); au.pause(); au.removeAttribute('src'); showPlayer(p);
-  if (!sb || !s.is_live){ toast(s.name + ' isn’t live right now.'); $('pBtn').textContent = '▶'; return; }
+  if (!sb || !s.is_live){ toast(s.name + ' isn’t live right now.'); setPlayIcon(false); return; }
   const me = Math.random().toString(36).slice(2), ch = sb.channel('live:' + s.id), pc = new RTCPeerConnection(RTC), q = [];
   LS = {ch, pc, id:me}; toast('Tuning in...');
   const send = (event, payload) => ch.send({type:'broadcast', event, payload});
-  pc.ontrack = e => { au.srcObject = e.streams[0]; au.play().then(() => toast('')).catch(() => { $('pBtn').textContent = '▶'; toast('Connected. Tap ▶ to hear the broadcast.'); }); };
+  pc.ontrack = e => { au.srcObject = e.streams[0]; au.play().then(() => toast('')).catch(() => { setPlayIcon(false); toast('Connected. Tap play to hear the broadcast.'); }); };
   pc.onconnectionstatechange = () => { if (pc.connectionState === 'failed') toast('Couldn’t connect to the broadcast. Your network may be blocking live audio.'); };
   pc.onicecandidate = e => e.candidate && send('ice', {to:'host', peer:me, c:e.candidate});
   ch.on('broadcast', {event:'offer'}, async ({payload:x}) => {

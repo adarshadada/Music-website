@@ -3,7 +3,7 @@ const MORSE = {A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',
 const UNMORSE = Object.fromEntries(Object.entries(MORSE).map(([k, v]) => [v, k]));
 const toMorse = t => String(t).toUpperCase().split(/\s+/).map(w => [...w].map(c => MORSE[c]).filter(Boolean).join(' ')).filter(Boolean).join(' / ');
 const fromMorse = m => String(m).split(' / ').map(w => w.trim().split(' ').map(c => UNMORSE[c] || '').join('')).join(' ').trim();
-const morseHTML = m => esc(m).replace(/\./g, '·').replace(/-/g, '−').replace(/ \/ /g, '  ／  ');
+const morseHTML = m => esc(m).replace(/\./g, '·').replace(/-/g, '−').replace(/ \/ /g, '   /   ');
 const cleanMorse = m => String(m).replace(/[^.\-\/ ]/g, '').replace(/\s+/g, ' ').trim().slice(0, 400);
 const MZ = {ctx:null};
 function playMorse(m){
@@ -28,7 +28,7 @@ function guessStart(el, p){
   const show = () => {
     const q = rounds[i]; lock = false;
     el.innerHTML = `<div class="msg">Round ${i + 1} of ${N} · ${score} pts</div><div class="morse" aria-label="Morse code">${morseHTML(MORSE[q.c])}</div>
-      <button class="btn ghost sm" id="gh">▶ Hear it</button><p class="msg">Which letter is this?</p>
+      <button class="btn ghost sm" id="gh">Hear it</button><p class="msg">Which letter is this?</p>
       <div class="opts">${q.o.map(l => `<button class="opt" data-l="${l}">${l}</button>`).join('')}</div><div id="mpB"></div>`;
     $('gh').onclick = () => playMorse(MORSE[q.c]); playMorse(MORSE[q.c]); t0 = performance.now();
     MP.onBoard = () => { const b = $('mpB'); if (b) b.innerHTML = MP.ch ? mpBoardHTML(rank, fmt) : ''; }; MP.onBoard();
@@ -60,10 +60,10 @@ function mcEnter(el, room){
     <div class="chat" id="mcL"></div>
     <div class="two" style="margin-top:10px"><input id="mcT" maxlength="100" placeholder="Type a message" autocomplete="off"><button class="btn fit" id="mcS">Send</button></div>
     <div class="keyr"><div class="msg">Or tap out the morse yourself:</div>
-      <div class="ctl"><button class="opt k" id="kd">· dot</button><button class="opt k" id="kh">− dash</button><button class="opt k" id="ks">letter gap</button><button class="opt k" id="kb">⌫</button></div>
+      <div class="ctl"><button class="opt k" id="kd">· dot</button><button class="opt k" id="kh">− dash</button><button class="opt k" id="ks">letter gap</button><button class="opt k" id="kb">Delete</button></div>
       <div class="morse" id="kp" style="font-size:28px;min-height:56px"></div><div class="msg" id="kx"></div><button class="btn ghost sm" id="kS" style="margin-top:8px">Send morse</button></div>`;
   const draw = () => {
-    $('mcL').innerHTML = msgs.length ? msgs.map(x => `<p class="${x.id === MP.id ? 'me' : ''}"><i>${esc(x.name)}</i><span class="mz">${morseHTML(x.m)}</span><b>${esc(fromMorse(x.m))}</b><button class="pm" data-pm="${esc(x.m)}" aria-label="Play">▶</button></p>`).join('') : '<div class="msg">No messages yet. Say something in Morse.</div>';
+    $('mcL').innerHTML = msgs.length ? msgs.map(x => `<p class="${x.id === MP.id ? 'me' : ''}"><i>${esc(x.name)}</i><span class="mz">${morseHTML(x.m)}</span><b>${esc(fromMorse(x.m))}</b><button class="pm" data-pm="${esc(x.m)}" aria-label="Play">Play</button></p>`).join('') : '<div class="msg">No messages yet. Say something in Morse.</div>';
     $('mcL').scrollTop = 1e9;
   };
   const send = m => {

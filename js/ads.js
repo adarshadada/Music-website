@@ -3,7 +3,7 @@
 const ADS = {
   adsense:{client:'', slot:''},   // paste ca-pub-... and the slot id after AdSense approves your site
   house:[ // edit these or add paid sponsors. Use "href" for an outside link, or "go" for a tab inside the app
-    {t:'Start your own station', d:'Pick a wave tag, add a logo and go live from your browser.', b:'Open Studio', go:'studio', c:'#9b8cff'},
+    {t:'Start your own station', d:'Pick a wave tag, add a logo and go live from your browser.', b:'Open Studio', go:'studio', c:'#8fb8ff'},
     {t:'Take a quick game break', d:'Beat your best in Memory Match, Music Quiz or Reaction Wave.', b:'Play now', go:'games', c:'#4fe3c6'},
     {t:'Find your people', d:'Add friends, follow great stations and see who is on air.', b:'Browse people', go:'people', c:'#ffbf47'}]
 };

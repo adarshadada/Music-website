@@ -38,7 +38,7 @@ async function loadComm(reset){
     return `<button class="card" data-id="${esc(s.id)}"><div class="ban">${pic(s.banner_url, 'b')}</div>
       <div class="cb"><div class="lg">${pic(s.logo_url, 'a')}</div><b>${esc(s.name)}${isLive(s) ? '<em class="live">LIVE</em>' : ''}</b>
       <span class="tag" style="background:${esc(s.accent)};color:${onc(s.accent || '#c8f54b')}">wmz/${esc(s.tag)}</span>
-      <p>${esc(s.description || (s.genres || []).join(', ') || 'No description yet')}</p><span>by ${esc(who(o))} · ▲ ${s.votes || 0}</span></div></button>`;
+      <p>${esc(s.description || (s.genres || []).join(', ') || 'No description yet')}</p><span>by ${esc(who(o))} · ${vt(s.votes || 0)}</span></div></button>`;
   }).join(''));
   window.CS = Object.assign(window.CS || {}, Object.fromEntries(a.map(s => [s.id, s])));
   if (!$('cg').children.length) $('cg').innerHTML = '<div class="empty">No community stations yet. Be the first: open Studio and start yours.</div>';

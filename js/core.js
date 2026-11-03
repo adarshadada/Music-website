@@ -20,3 +20,9 @@ let user = sb ? null : ls.get('wr_user', null), my = null, tab = 'real';
 const au = new Audio(); au.preload = 'none';
 const isLive = s => s.is_live && Date.now() - new Date(s.live_at || 0) < 180000;
 const who = u => (u && (u.display_name || u.username)) || 'guest';
+
+/* icons used by the player and vote labels (plain SVG, no emoji) */
+const ICON_PLAY = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+const setPlayIcon = on => { $('pBtn').innerHTML = on ? ICON_PAUSE : ICON_PLAY; };
+const vt = n => n + (n === 1 ? ' vote' : ' votes');

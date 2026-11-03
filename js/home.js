@@ -1,6 +1,6 @@
 /* wave.radio · js/home.js · Home screen. */
 /* ---- home ---- */
-const miniCard = s => `<button class="card" data-id="${esc(s.id)}"><div class="ban">${pic(s.banner_url, 'b')}</div><div class="cb"><div class="lg">${pic(s.logo_url, 'a')}</div><b>${esc(s.name)}${isLive(s) ? '<em class="live">LIVE</em>' : ''}</b><span class="tag" style="background:${esc(s.accent)};color:${onc(s.accent || '#c8f54b')}">wmz/${esc(s.tag)}</span><span>▲ ${s.votes || 0}</span></div></button>`;
+const miniCard = s => `<button class="card" data-id="${esc(s.id)}"><div class="ban">${pic(s.banner_url, 'b')}</div><div class="cb"><div class="lg">${pic(s.logo_url, 'a')}</div><b>${esc(s.name)}${isLive(s) ? '<em class="live">LIVE</em>' : ''}</b><span class="tag" style="background:${esc(s.accent)};color:${onc(s.accent || '#c8f54b')}">wmz/${esc(s.tag)}</span><span>${vt(s.votes || 0)}</span></div></button>`;
 async function loadHome(){
   const h = new Date().getHours();
   $('hHi').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (user ? ', ' + who(user) : '');
