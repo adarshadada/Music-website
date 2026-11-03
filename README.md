@@ -8,9 +8,9 @@ about.html      about page
 privacy.html    privacy policy
 terms.html      terms and conditions
 admin.html      admin panel (sign in with an admin account)
-css/            style.css, animations.css, games.css, website.css, pages.css
+css/            style.css, animations.css, games.css, notifications.css, website.css, pages.css
 js/             config.js (Supabase keys), core.js, backend.js, player.js, stations.js, account.js,
-                studio.js, social.js, ads.js, home.js, games.js, multiplayer.js, morse.js, tinyham.js, script.js
+                studio.js, social.js, notifications.js, ads.js, home.js, games.js, multiplayer.js, morse.js, tinyham.js, script.js
 assets/         logo, favicons (svg + png), app icons (icon-192, icon-512) and game icons
 ```
 Scripts load in the order listed in index.html. Multiplayer games need no database changes.

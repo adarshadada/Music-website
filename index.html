@@ -15,12 +15,13 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/animations.css">
 <link rel="stylesheet" href="css/games.css">
+<link rel="stylesheet" href="css/notifications.css">
 <link rel="stylesheet" href="css/website.css">
 </head>
 <body>
 <header>
   <div class="brand disp"><div class="mark" id="mk"></div>wave.radio</div>
-  <span class="net" id="net" hidden></span><button class="me out" id="me">Sign in</button>
+  <span class="net" id="net" hidden></span><button class="bell" id="bell" aria-label="Notifications" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 004 0"/></svg><span class="nb" id="bellN" hidden>0</span></button><button class="me out" id="me">Sign in</button>
 </header>
 <div class="note" id="banner" hidden style="margin-bottom:14px"></div>
 <div class="seg" id="seg" role="tablist"><button data-g="home" class=on><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button><button data-g="listen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="3"/><path d="M7 8l10-4"/><circle cx="9" cy="14" r="2"/><path d="M15 12h3M15 16h3"/></svg><span>Listen</span></button><button data-g="games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5M15.5 11h.01M18 14h.01"/></svg><span>Games</span></button><button data-g="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.8c2 .6 3.2 2.3 3.5 5.2"/></svg><span>Social</span></button><button data-g="studio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg><span>Studio</span></button></div>
@@ -98,9 +99,18 @@
   <label for="pB">Bio</label><textarea id="pB" rows="3" maxlength="300"></textarea>
   <label for="pL">Link</label><input id="pL" type="url" placeholder="https://">
   <label for="pCo">Country</label><select id="pCo"></select>
+  <label>Notifications</label>
+  <label class="tog"><input type="checkbox" id="nC"><span>New chat messages<small>In your station and room chats, and chats you joined.</small></span></label>
+  <label class="tog"><input type="checkbox" id="nV"><span>Stations going live<small>Friends and stations you upvoted.</small></span></label>
+  <label class="tog"><input type="checkbox" id="nF"><span>Friend requests</span></label>
   <label for="pC">Accent colour</label><input id="pC" type="color" value="#c8f54b">
   <button class="btn ghost sm danger" id="pDel" style="margin-top:14px">Delete account</button><div class="msg" id="pM"></div>
   <div class="acts"><button class="btn ghost" id="pOut">Sign out</button><button class="btn" id="pSave">Save profile</button></div></dialog>
+
+<dialog id="dNotif"><h3>Notifications</h3>
+  <div class="ctl"><button class="btn ghost sm" id="nAll">Mark all read</button><button class="btn ghost sm" id="nDev" hidden>Turn on device alerts</button></div>
+  <div id="nL" style="margin-top:12px"></div>
+  <div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
 
 <dialog id="dGame"><h3 id="gT"></h3><div id="gB"></div><div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
 
@@ -139,6 +149,7 @@
 <script src="js/account.js"></script>
 <script src="js/studio.js"></script>
 <script src="js/social.js"></script>
+<script src="js/notifications.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/home.js"></script>
 <script src="js/games.js"></script>

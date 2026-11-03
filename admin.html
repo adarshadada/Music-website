@@ -15,13 +15,13 @@
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{background:var(--bg);color:var(--ink);font:400 15px/1.5 'DM Sans',system-ui,sans-serif;max-width:960px;margin:auto;padding:14px 16px 60px}
 h1,h2,.disp{font-family:'Bricolage Grotesque','DM Sans',system-ui,sans-serif;letter-spacing:-.02em}
-button,input{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
+button,input,textarea,select{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 header{display:flex;align-items:center;gap:10px;padding:4px 0 14px}header .brand{flex:1;font-weight:800;font-size:20px;display:flex;align-items:center;gap:10px}
 header svg{width:36px;height:36px}.tag{background:var(--ink);color:var(--bg);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;max-width:420px;margin:40px auto}
 .card h2{font-size:26px;margin-bottom:8px}label{display:block;font-weight:500;margin:12px 0 4px;font-size:14px}
-input{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:11px 14px}
+input,textarea,select{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:11px 14px}
 .btn{background:var(--accent);color:#14131a;font-weight:700;padding:10px 18px;border-radius:10px}.btn.ghost{background:none;border:1.5px solid var(--line);color:var(--ink)}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none}
 .tabs button{flex:none;padding:8px 16px;border-radius:10px;font-weight:700;color:var(--mute);border:1px solid var(--line);background:var(--card)}
@@ -51,8 +51,20 @@ em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radiu
 <div class="card" id="denied" hidden><h2 class="disp">Not an admin</h2><p style="color:var(--mute)">This account isn’t in the admins table. Run the last step of wave.radio-v5-upgrade.sql with your email, then sign in again.</p></div>
 
 <div id="app" hidden>
-  <div class="tabs" id="tabs"><button data-t="ov" class="on">Overview</button><button data-t="u">Users</button><button data-t="s">Stations</button><button data-t="r">Rooms</button><button data-t="m">Chat</button></div>
+  <div class="tabs" id="tabs"><button data-t="ov" class="on">Overview</button><button data-t="u">Users</button><button data-t="s">Stations</button><button data-t="r">Rooms</button><button data-t="m">Chat</button><button data-t="n">Notify</button></div>
   <div id="p-ov"><div class="stats" id="stats"></div></div>
+  <div id="p-n" hidden>
+    <input id="nq" type="search" placeholder="Find a user to message" aria-label="Find a user">
+    <div id="nres"></div>
+    <div class="row" id="nto" hidden><div class="t"><b id="nwho"></b><small id="nsub">Messages to this user</small></div><div class="ac"><button class="b" id="nclr">Change user</button></div></div>
+    <div id="nthread"></div>
+    <label for="nt">Title</label><input id="nt" maxlength="80" placeholder="Short title">
+    <label for="nb">Message</label><textarea id="nb" maxlength="300" rows="3" placeholder="What do you want to tell them?"></textarea>
+    <label for="nl">When tapped, open</label>
+    <select id="nl"><option value="">Nothing</option><option value="home">Home</option><option value="comm">Community</option><option value="people">People</option><option value="games">Games</option><option value="studio">Studio</option></select>
+    <div class="ac" style="justify-content:flex-start;margin-top:14px"><button class="btn" id="nsend">Send to this user</button><button class="btn ghost" id="nall">Send to everyone</button></div>
+    <p id="nmsg" style="color:var(--mute);font-size:13px;margin-top:8px"></p>
+  </div>
   <div id="panels"></div>
 </div>
 <div id="toast"><span id="ts"></span></div>
@@ -72,7 +84,7 @@ const btn = (a, id, t, c = '') => `<button class="b ${c}" data-a="${a}" data-id=
 const CFG = {
   u:{tbl:'profiles', sel:'*,stations!owner(id,name,tag,is_live,live_at)', find:['username','display_name'], order:[['created_at', false]], ph:'Search users',
     row:p => { const s = one(p.stations); return `<div class="row"><div class="t"><b>${esc(p.display_name || p.username)}${p.suspended ? '<em>SUSPENDED</em>' : ''}</b><small>@${esc(p.username)} · ${esc(p.country || 'no country')} · joined ${day(p.created_at)}</small><small>${s ? 'wmz/' + esc(s.tag) + ' · ' + esc(s.name) + (fresh(s) ? ' · LIVE' : '') : 'No station'}</small></div>
-      <div class="ac">${fresh(s) ? btn('cut', s.id, 'Cut broadcast', 'warn') : ''}${p.suspended ? btn('uns', p.id, 'Unsuspend') : btn('sus', p.id, 'Suspend')}${btn('delu', p.id, 'Delete user', 'danger')}</div></div>`; }},
+      <div class="ac">${fresh(s) ? btn('cut', s.id, 'Cut broadcast', 'warn') : ''}${p.suspended ? btn('uns', p.id, 'Unsuspend') : btn('sus', p.id, 'Suspend')}${btn('ntf', p.id, 'Notify')}${btn('delu', p.id, 'Delete user', 'danger')}</div></div>`; }},
   s:{tbl:'stations', sel:'*,profiles!owner(username)', find:['name','tag'], order:[['is_live', false], ['created_at', false]], ph:'Search stations or wave tags',
     row:s => `<div class="row"><div class="t"><b>${esc(s.name)}${fresh(s) ? '<em>LIVE</em>' : ''}</b><small>wmz/${esc(s.tag)} · by @${esc((one(s.profiles) || {}).username)} · ${s.votes || 0} vote${s.votes === 1 ? '' : 's'} · ${esc(s.mode)}</small></div>
       <div class="ac">${fresh(s) ? btn('cut', s.id, 'Cut broadcast', 'warn') : ''}${btn('dels', s.id, 'Delete station', 'danger')}</div></div>`},
@@ -105,8 +117,8 @@ async function overview(){
 }
 function go(t){
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-  ['ov', ...Object.keys(CFG)].forEach(k => $('p-' + k).hidden = k !== t);
-  t === 'ov' ? overview() : load(t, true);
+  ['ov', 'n', ...Object.keys(CFG)].forEach(k => $('p-' + k).hidden = k !== t);
+  t === 'ov' ? overview() : t === 'n' ? nOpen() : load(t, true);
 }
 $('tabs').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.t); };
 
@@ -121,6 +133,7 @@ async function cut(id){
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'); if (!b) return;
   const a = b.dataset.a, id = b.dataset.id; let r;
+  if (a === 'ntf' || a === 'npick'){ await nPick(id); return go('n'); }
   if (a === 'cut') await cut(id);
   else if (a === 'sus' || a === 'uns'){
     r = await sb.from('profiles').update({suspended:a === 'sus'}).eq('id', id);
@@ -134,6 +147,39 @@ document.addEventListener('click', async e => {
   if (r) toast('Done.');
   const t = document.querySelector('#tabs .on').dataset.t; go(t);
 });
+
+/* ---- Notify: pick a user, see what was sent, send a new note ---- */
+let nSel = null, nT;
+async function nPick(id){
+  const p = (await sb.from('profiles').select('id,username,display_name').eq('id', id).maybeSingle()).data;
+  if (!p) return toast('User not found.'); nSel = p;
+}
+function nShow(){
+  $('nto').hidden = !nSel; $('nq').hidden = !!nSel; $('nres').innerHTML = ''; $('nsend').disabled = !nSel;
+  if (nSel) $('nwho').textContent = (nSel.display_name || nSel.username) + ' (@' + nSel.username + ')';
+}
+async function nThread(){
+  if (!nSel) return void ($('nthread').innerHTML = '');
+  const x = await sb.from('notifications').select('*').eq('user_id', nSel.id).eq('kind', 'admin').eq('sender', (await sb.auth.getSession()).data.session.user.id).order('created_at', {ascending:false}).limit(15);
+  $('nthread').innerHTML = (x.data || []).length ? '<h3 class="disp" style="margin:14px 0 4px;font-size:18px">Sent to this user</h3>' + x.data.map(n => `<div class="row"><div class="t"><b>${esc(n.title)}</b><small style="white-space:normal">${esc(n.body)}</small><small>${new Date(n.created_at).toLocaleString()} · ${n.read ? 'Seen' : 'Not seen yet'}</small></div></div>`).join('') : '<div class="empty">Nothing sent to this user yet.</div>';
+}
+function nOpen(){ nShow(); nThread(); }
+$('nq').oninput = () => { clearTimeout(nT); nT = setTimeout(async () => {
+  const q = $('nq').value.trim().replace(/[%,()]/g, ''); if (!q) return void ($('nres').innerHTML = '');
+  const x = await sb.from('profiles').select('id,username,display_name').or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).limit(8);
+  $('nres').innerHTML = (x.data || []).map(p => `<div class="row"><div class="t"><b>${esc(p.display_name || p.username)}</b><small>@${esc(p.username)}</small></div><div class="ac">${btn('npick', p.id, 'Select')}</div></div>`).join('') || '<div class="empty">No users found.</div>';
+}, 300); };
+$('nclr').onclick = () => { nSel = null; nOpen(); };
+async function nSend(everyone){
+  const t = $('nt').value.trim(), b = $('nb').value.trim(), l = $('nl').value || null, m = $('nmsg');
+  if (!t || !b) return void (m.textContent = 'Add a title and a message.');
+  if (!everyone && !nSel) return void (m.textContent = 'Pick a user first.');
+  if (everyone && !confirm('Send this to every user?')) return;
+  const r = await sb.rpc('admin_notify', {p_target:everyone ? null : nSel.id, p_title:t, p_body:b, p_link:l});
+  if (r.error) return void (m.textContent = r.error.message + ' (run wave.radio-v6-notifications.sql if you have not)');
+  m.textContent = 'Sent to ' + r.data + ' user' + (r.data === 1 ? '' : 's') + '.'; $('nt').value = $('nb').value = ''; nThread();
+}
+$('nsend').onclick = () => nSend(false); $('nall').onclick = () => nSend(true);
 
 const show = v => { ['login', 'denied', 'app'].forEach(x => $(x).hidden = x !== v); $('out').hidden = v === 'login'; };
 async function boot(){

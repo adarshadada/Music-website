@@ -4,7 +4,7 @@ let mode = 'in';
 function renderMe(){
   $('me').className = 'me' + (user ? '' : ' out');
   $('me').innerHTML = user ? `<span class="mark">${user.avatar_url ? `<img src="${esc(user.avatar_url)}" alt="" onerror="this.outerHTML=LOGO">` : LOGO}</span>${esc(who(user))}` : 'Sign in';
-  accent(user && user.accent);
+  accent(user && user.accent); if (window.notifSync) notifSync();
 }
 const need = () => user ? true : (openAuth('in'), false);
 function openAuth(m){
@@ -73,14 +73,14 @@ async function loadProfile(u){
 }
 $('me').onclick = () => {
   if (!user) return openAuth('in');
-  $('pD').value = user.display_name || ''; $('pU').value = user.username; $('pB').value = user.bio || ''; $('pL').value = user.link || ''; $('pCo').value = user.country || ''; $('pC').value = user.accent || '#c8f54b'; $('pM').textContent = '';
+  $('pD').value = user.display_name || ''; $('pU').value = user.username; $('pB').value = user.bio || ''; $('pL').value = user.link || ''; $('pCo').value = user.country || ''; const nf = user.notify_prefs || {}; $('nC').checked = nf.chat !== false; $('nV').checked = nf.live !== false; $('nF').checked = nf.friend !== false; $('pC').value = user.accent || '#c8f54b'; $('pM').textContent = '';
   setImg('av', user.avatar_url, 'a'); setImg('bn', user.banner_url, 'b'); $('dProf').showModal();
 };
 $('pSave').onclick = async () => {
   const u = cleanU($('pU').value), link = $('pL').value.trim();
   if (u.length < 3) return void ($('pM').textContent = 'Username needs 3+ letters, numbers, dots or underscores.');
   if (link && !/^https:\/\//.test(link)) return void ($('pM').textContent = 'The link must start with https://');
-  const p = {username:u, display_name:$('pD').value.trim() || u, bio:$('pB').value.trim(), link:link || null, country:$('pCo').value || null, accent:$('pC').value, avatar_url:T.av || null, banner_url:T.bn || null, updated_at:new Date().toISOString()};
+  const p = {username:u, display_name:$('pD').value.trim() || u, bio:$('pB').value.trim(), link:link || null, country:$('pCo').value || null, notify_prefs:{chat:$('nC').checked, live:$('nV').checked, friend:$('nF').checked, admin:true}, accent:$('pC').value, avatar_url:T.av || null, banner_url:T.bn || null, updated_at:new Date().toISOString()};
   if (sb){ const r = await sb.from('profiles').update(p).eq('id', user.id); if (r.error) return void ($('pM').textContent = r.error.code === '23505' ? 'That username is taken.' : r.error.message); }
   user = Object.assign(user, p); if (!sb) ls.set('wr_user', user);
   renderMe(); $('dProf').close();
