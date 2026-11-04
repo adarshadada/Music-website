@@ -75,7 +75,7 @@
   <div id="frq"></div><div id="plist"></div><button class="btn ghost more" id="pm" hidden>Show more</button>
 </section>
 <section class="tab" id="t-studio"><div id="sd"></div></section>
-<footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/adarshadada/Music-website">GitHub</a></footer>
+<footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></footer>
 </main>
 
 <div id="toast"><span id="ts"></span></div>
@@ -105,13 +105,20 @@
   <label class="tog"><input type="checkbox" id="nV"><span>Stations going live<small>Friends and stations you upvoted.</small></span></label>
   <label class="tog"><input type="checkbox" id="nF"><span>Friend requests</span></label>
   <label for="pC">Accent colour</label><input id="pC" type="color" value="#c8f54b">
-  <button class="btn ghost sm danger" id="pDel" style="margin-top:14px">Delete account</button><div class="msg" id="pM"></div>
+  <div class="ctl" style="margin-top:14px"><button type="button" class="btn ghost sm" id="pFb">Send feedback</button><button type="button" class="btn ghost sm danger" id="pDel">Delete account</button></div><div class="msg" id="pM"></div>
   <div class="acts"><button class="btn ghost" id="pOut">Sign out</button><button class="btn" id="pSave">Save profile</button></div></dialog>
 
 <dialog id="dNotif"><h3>Notifications</h3>
-  <div class="ctl"><button class="btn ghost sm" id="nAll">Mark all read</button><button class="btn ghost sm" id="nDev" hidden>Turn on push alerts</button></div>
+  <div class="ctl"><button class="btn ghost sm" id="nAll">Mark all read</button><button class="btn ghost sm" id="nDev" hidden>Turn on push alerts</button><button class="btn ghost sm" id="nChk">Check push status</button></div>
+  <div class="msg" id="nDiag" style="white-space:pre-line"></div>
   <div id="nL" style="margin-top:12px"></div>
   <div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
+
+<dialog id="dFb"><h3>Send feedback</h3>
+  <p class="msg">Tell the wave.radio team about a bug, an idea or a problem with content.</p>
+  <label for="fbT">Message</label><textarea id="fbT" rows="5" maxlength="1000"></textarea>
+  <div class="msg" id="fbM"></div>
+  <div class="acts"><button class="btn ghost" data-close>Cancel</button><button class="btn" id="fbGo">Send</button></div></dialog>
 
 <dialog id="dGame"><h3 id="gT"></h3><div id="gB"></div><div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
 
@@ -152,6 +159,7 @@
 <script src="js/social.js"></script>
 <script src="js/notifications.js"></script>
 <script src="js/push.js"></script>
+<script src="js/feedback.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/home.js"></script>
 <script src="js/games.js"></script>

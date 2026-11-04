@@ -11,7 +11,7 @@ function notifSync(){
   if (!on){ if (NT.ch){ sb.removeChannel(NT.ch); NT.ch = null; } NT.uid = null; NT.items = []; notifBadge(); return; }
   if (NT.uid === user.id) return;
   NT.uid = user.id; if (NT.ch) sb.removeChannel(NT.ch);
-  notifLoad(); if (window.pushEnable && window.Notification && Notification.permission === 'granted') pushEnable(true);
+  notifLoad(); if (window.pushEnable && (PUSH.native || (window.Notification && Notification.permission === 'granted'))) pushEnable(true);
   NT.ch = sb.channel('notif-' + user.id).on('postgres_changes', {event:'*', schema:'public', table:'notifications', filter:'user_id=eq.' + user.id}, onNotif).subscribe();
 }
 async function notifLoad(){
@@ -38,7 +38,7 @@ function notifDraw(){
   $('nL').innerHTML = NT.items.length
     ? NT.items.map(n => `<button class="nrow ${n.read ? '' : 'un'}" data-n="${n.id}"><b><span class="nk">${NK[n.kind] || 'Info'}</span>${esc(n.title)}${n.count > 1 ? ' (' + n.count + ')' : ''}</b><span>${esc(n.body || '')}</span><small>${ago(n.created_at)}</small></button>`).join('')
     : '<div class="empty">Nothing yet. New chat messages, friends going live and notes from the team show up here.</div>';
-  $('nDev').hidden = !(window.Notification && (Notification.permission === 'default' || (PUSH.on && Notification.permission === 'granted' && !PUSH.token)));
+  $('nDev').hidden = PUSH.native ? !!PUSH.token : !(window.Notification && (Notification.permission === 'default' || (PUSH.on && Notification.permission === 'granted' && !PUSH.token)));
 }
 async function notifOpen(n){
   $('dNotif').close(); const l = n.link || '';

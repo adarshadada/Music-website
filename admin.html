@@ -51,7 +51,7 @@ em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radiu
 <div class="card" id="denied" hidden><h2 class="disp">Not an admin</h2><p style="color:var(--mute)">This account isn’t in the admins table. Run the last step of wave.radio-v5-upgrade.sql with your email, then sign in again.</p></div>
 
 <div id="app" hidden>
-  <div class="tabs" id="tabs"><button data-t="ov" class="on">Overview</button><button data-t="u">Users</button><button data-t="s">Stations</button><button data-t="r">Rooms</button><button data-t="m">Chat</button><button data-t="n">Notify</button></div>
+  <div class="tabs" id="tabs"><button data-t="ov" class="on">Overview</button><button data-t="u">Users</button><button data-t="s">Stations</button><button data-t="r">Rooms</button><button data-t="m">Chat</button><button data-t="n">Notify</button><button data-t="f">Feedback</button></div>
   <div id="p-ov"><div class="stats" id="stats"></div></div>
   <div id="p-n" hidden>
     <input id="nq" type="search" placeholder="Find a user to message" aria-label="Find a user">
@@ -93,6 +93,8 @@ const CFG = {
   m:{tbl:'messages', sel:'*,profiles!user_id(username)', find:['body'], order:[['created_at', false]], ph:'Search chat messages',
     row:m => `<div class="row"><div class="t"><b>${esc(m.body)}</b><small>@${esc((one(m.profiles) || {}).username)} · ${esc(m.channel)} · ${new Date(m.created_at).toLocaleString()}</small></div><div class="ac">${btn('delm', m.id, 'Delete', 'danger')}</div></div>`}
 };
+CFG.f = {tbl:'feedback', sel:'*,profiles!user_id(username)', find:['message'], order:[['created_at', false]], ph:'Search feedback',
+  row:f => `<div class="row"><div class="t"><b style="white-space:normal">${esc(f.message)}</b><small>@${esc((one(f.profiles) || {}).username || 'deleted user')} · ${new Date(f.created_at).toLocaleString()}</small></div><div class="ac">${f.user_id ? btn('ntf', f.user_id, 'Reply') : ''}${btn('delf', f.id, 'Delete', 'danger')}</div></div>`};
 const page = {}, qs = {};
 $('panels').innerHTML = Object.keys(CFG).map(k => `<div id="p-${k}" hidden><input id="q-${k}" type="search" placeholder="${CFG[k].ph}" aria-label="${CFG[k].ph}"><div id="l-${k}"></div><button class="btn ghost more" id="m-${k}" hidden>Show more</button></div>`).join('');
 let timer;
@@ -143,6 +145,7 @@ document.addEventListener('click', async e => {
   else if (a === 'dels'){ if (!confirm('Delete this station?')) return; r = await sb.from('stations').delete().eq('id', id); }
   else if (a === 'delr'){ if (!confirm('Delete this room and its messages?')) return; r = await sb.from('rooms').delete().eq('id', id); }
   else if (a === 'delm') r = await sb.from('messages').delete().eq('id', id);
+  else if (a === 'delf'){ if (!confirm('Delete this message?')) return; r = await sb.from('feedback').delete().eq('id', id); }
   if (r && r.error) return toast(r.error.message);
   if (r) toast('Done.');
   const t = document.querySelector('#tabs .on').dataset.t; go(t);
