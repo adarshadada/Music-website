@@ -2,3 +2,7 @@
 /* ---- CONFIG ---- */
 const SUPABASE_URL = "https://pwmrxmxtegsjcnfjzszz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3bXJ4bXh0ZWdzamNuZmp6c3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNTQ5NTQsImV4cCI6MjEwODkzMDk1NH0.uMpFz-jj0A1Syhue600eX8pOXO2XCoMtMaKVrP8eVrE";
+
+/* ---- Firebase push (optional). Firebase console > Project settings. These values are public. Leave empty to turn push off. ---- */
+const FIREBASE_CONFIG = {apiKey:'', authDomain:'', projectId:'', messagingSenderId:'', appId:''};
+const FCM_VAPID_KEY = '';   // Project settings > Cloud Messaging > Web Push certificates > Key pair

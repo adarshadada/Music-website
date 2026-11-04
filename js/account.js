@@ -85,7 +85,7 @@ $('pSave').onclick = async () => {
   user = Object.assign(user, p); if (!sb) ls.set('wr_user', user);
   renderMe(); $('dProf').close();
 };
-$('pOut').onclick = async () => { if (sb) try { await sb.auth.signOut(); } catch(e){} await endLive(); user = null; my = null; ls.set('wr_user', null); renderMe(); $('dProf').close(); if (tab === 'studio') renderStudio(); };
+$('pOut').onclick = async () => { if (window.pushForget) await pushForget(); if (sb) try { await sb.auth.signOut(); } catch(e){} await endLive(); user = null; my = null; ls.set('wr_user', null); renderMe(); $('dProf').close(); if (tab === 'studio') renderStudio(); };
 
 /* ---- station create / edit ---- */
 const ADJ = ['ember','neon','velvet','lunar','static','paper','golden','quiet','electric','mellow','hazy','cosmic','sunny','midnight'];

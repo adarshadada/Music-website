@@ -26,4 +26,6 @@ $('dGo').onclick = async () => {
   if (sb){ try { const r = await sb.auth.getSession(); if (r.data.session) await loadProfile(r.data.session.user); } catch(e){} }
   else if (user) my = await db.mine();
   renderGames(); renderMe(); loadReal(true); ping(); go('home');
+  const om = location.hash.match(/^#open=([^&]+)&k=(\w+)/);   // opened from a push alert
+  if (om){ history.replaceState(null, '', location.pathname); setTimeout(() => notifOpen({kind:om[2], link:decodeURIComponent(om[1])}), 900); }
 })();

@@ -8,6 +8,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <meta name="theme-color" content="#f5f4ef" media="(prefers-color-scheme: light)">
@@ -108,7 +109,7 @@
   <div class="acts"><button class="btn ghost" id="pOut">Sign out</button><button class="btn" id="pSave">Save profile</button></div></dialog>
 
 <dialog id="dNotif"><h3>Notifications</h3>
-  <div class="ctl"><button class="btn ghost sm" id="nAll">Mark all read</button><button class="btn ghost sm" id="nDev" hidden>Turn on device alerts</button></div>
+  <div class="ctl"><button class="btn ghost sm" id="nAll">Mark all read</button><button class="btn ghost sm" id="nDev" hidden>Turn on push alerts</button></div>
   <div id="nL" style="margin-top:12px"></div>
   <div class="acts"><button class="btn ghost" data-close>Close</button></div></dialog>
 
@@ -150,6 +151,7 @@
 <script src="js/studio.js"></script>
 <script src="js/social.js"></script>
 <script src="js/notifications.js"></script>
+<script src="js/push.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/home.js"></script>
 <script src="js/games.js"></script>
