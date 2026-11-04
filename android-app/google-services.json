@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "695296546070",
+    "project_id": "waveradio-529bf",
+    "storage_bucket": "waveradio-529bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695296546070:android:2ff262be976ca208f2ac37",
+        "android_client_info": {
+          "package_name": "com.waveradio.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAf7W-cHnVgAki3TxS4mFcRk54bCoYCHi0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695296546070:android:d232b84db8661baff2ac37",
+        "android_client_info": {
+          "package_name": "wave.radio.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAf7W-cHnVgAki3TxS4mFcRk54bCoYCHi0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
