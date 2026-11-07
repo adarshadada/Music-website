@@ -39,11 +39,6 @@ dialog[open]::backdrop{animation:fadeIn .25s ease}
 
 /* games */
 .gcard{transition:transform .2s var(--ease)}.gcard:active{transform:scale(.97)}
-.mc{transition:transform .2s var(--ease),background .2s,color .2s}.mc:active{transform:scale(.92)}
-.mc.up{animation:bounce .3s var(--ease)}.mc.ok{animation:bounce .45s var(--ease)}
-.opt{transition:background .2s,border-color .2s,transform .15s}.opt:active{transform:scale(.98)}
-.opt.ok{animation:bounce .35s var(--ease)}.opt.no{animation:shake .4s}
-.tap{transition:background .15s,transform .1s}.tap:active{transform:scale(.98)}.tap.g{animation:bounce .2s var(--ease)}
 
 @media (hover:hover){
   .btn:hover{filter:brightness(1.06)}
