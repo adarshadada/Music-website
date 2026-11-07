@@ -9,8 +9,10 @@ function arBot(g, a, dt){
     for (const o of g.actors) if (o !== a && o.alive){ const dd = Math.hypot(o.x - a.x, o.y - a.y); if (dd < bd){ bd = dd; best = o; } }
     ai.tgt = best;
     const want = a.hp < a.maxHp * .45 ? 'hp' : (a.slot[1] ? null : 'w');
-    if (want){ let gd = 1e9; for (const p of g.pk) if (p.cd <= 0 && (want === 'hp' ? p.type === 'hp' : (p.type !== 'hp' && p.type !== 'ammo'))){ const dd = Math.hypot(p.x - a.x, p.y - a.y); if (dd < gd){ gd = dd; ai.goal = p; } } }
+    if (want && !(ai.ng > 0)){ let gd = 1e9; for (const p of g.pk) if (p.cd <= 0 && (want === 'hp' ? p.type === 'hp' : (p.type !== 'hp' && p.type !== 'ammo'))){ const dd = Math.hypot(p.x - a.x, p.y - a.y); if (dd < gd){ gd = dd; ai.goal = p; } } }
   }
+  if (ai.goal){ if (ai.goal.cd > 0) ai.goal = null; else { ai.gt = (ai.gt === undefined ? 7 : ai.gt) - dt; if (ai.gt <= 0){ ai.goal = null; ai.ng = 9; ai.gt = undefined; } } } else ai.gt = undefined;
+  ai.ng -= dt;
   if (ai.et <= 0){ ai.et = .35; ai.err = (Math.random() - .5) * 2 * d.e; }
   const i = a.in, t = ai.tgt && ai.tgt.alive ? ai.tgt : null, k = a.slot[a.cur], w = WEAPONS[k];
   i.fire = false; i.jet = false; i.mx = 0;
@@ -20,6 +22,8 @@ function arBot(g, a, dt){
     const pref = k === 'shotgun' ? 180 : k === 'sniper' ? 650 : k === 'smg' ? 340 : 420, dx = t.x - a.x, ad = Math.abs(dx);
     i.mx = ad > pref * 1.25 ? Math.sign(dx) : ad < pref * .6 ? -Math.sign(dx) : ai.dir * .6; gy = t.y;
   }
+  if (a.ceil && !ai.esc){ const r = a.ceil, left = a.x - r[0], right = r[0] + r[2] - a.x, dir = left < right ? -1 : 1; ai.esc = {dir, t:(Math.min(left, right) + 30) / AR.RUN}; }
+  if (ai.esc){ ai.esc.t -= dt; i.mx = ai.esc.dir; if (ai.esc.t <= 0) ai.esc = null; }
   if (((gy - a.y < -50) || a.wall) && a.fuel > 12) i.jet = true;
   if (t){
     const dist = Math.hypot(t.x - a.x, t.y - a.y), tt = dist / w.spd;

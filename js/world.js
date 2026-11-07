@@ -11,6 +11,6 @@ function arMove(a, dt, rects){
   const w = AR.HW * 2, h = AR.HH * 2;
   a.x += a.vx * dt;
   for (const r of rects) if (arOverlap(a.x - AR.HW, a.y - AR.HH, w, h, r)){ if (a.vx > 0) a.x = r[0] - AR.HW; else if (a.vx < 0) a.x = r[0] + r[2] + AR.HW; a.vx = 0; a.wall = true; }
-  a.y += a.vy * dt; a.on = false;
-  for (const r of rects) if (arOverlap(a.x - AR.HW, a.y - AR.HH, w, h, r)){ if (a.vy > 0){ a.y = r[1] - AR.HH; a.on = true; } else if (a.vy < 0) a.y = r[1] + r[3] + AR.HH; a.vy = 0; }
+  a.y += a.vy * dt; a.on = false; a.ceil = null;
+  for (const r of rects) if (arOverlap(a.x - AR.HW, a.y - AR.HH, w, h, r)){ if (a.vy > 0){ a.y = r[1] - AR.HH; a.on = true; } else if (a.vy < 0){ a.y = r[1] + r[3] + AR.HH; a.ceil = r; } a.vy = 0; }
 }
